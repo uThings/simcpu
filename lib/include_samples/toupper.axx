@@ -1,0 +1,116 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; TOUPPER_STRLEN function test program
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+INBUFADDR: word 0E000           ; beginning of input buffer area
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+
+; GETS function: reads a line and stores the string
+;                at memory address passed in R1
+
+GETS:      LDBI R0 0A           ; void gets (char *str)
+L_GETS:    INB R2 0001
+           TSTI 0001     
+           JMPNZ L_GETS
+           STBR R2 R1    
+           SUB R0 R2
+           JMPZ END_GETS   
+           INC R1
+           JMP L_GETS
+END_GETS:  LDBI R2 0
+           STBR R2 R1    
+           RET
+
+; PUTS function: sends to the output device the string 
+;                whose address is passed in R1
+
+PUTS:      LDBR R2 R1           ; void puts (char *str)
+           JMPZ END_PUTS
+L_PUTS:    OUTB R2 0000
+           TSTO 0000     
+           JMPNZ L_PUTS
+           INC R1
+           JMP PUTS
+END_PUTS:  LDBI R2 0A
+LEND_PUTS: OUTB R2 0000
+           TSTO 0000     
+           JMPNZ LEND_PUTS
+           RET
+
+; TOUPPER function
+
+LOWER_A:        byte 61              ; 61h = 97
+UPPER_A:        byte 41              ; 41h = 65
+LOWER_Z:        byte 7A              ; 7Ah = 122
+UPPER_Z:        byte 5A              ; 5Ah = 90 (unused; see TOLOWER)
+
+TOUPPER:        LDBA R2 LOWER_A      ; char toupper (char ch)
+                LDBA R3 LOWER_Z
+                LDBA R4 UPPER_A
+
+                MV R1 R10
+                SUB R2 R10
+                JMPN TOUPPER_END   ; ch < 'a'?
+                MV R3 R10
+                SUB R1 R10
+                JMPN TOUPPER_END   ; ch > 'z'?
+                SUB R2 R1
+                ADD R4 R1
+TOUPPER_END:    MV R1 R0
+                RET
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           LDWA R1 INBUFADDR
+           PUSH R1
+           CALL GETS
+           POP R1
+
+           MV R1 R15
+
+L1:        LDBR R1 R15
+           JMPZ END
+           PUSH R15
+           CALL TOUPPER
+           POP R15
+           STBR R0 R15
+           INC R15
+           JMP L1
+
+END:       LDWA R1 INBUFADDR
+           PUSH R1
+           CALL PUTS
+           POP R1
+
+           ; the end
+           HLT

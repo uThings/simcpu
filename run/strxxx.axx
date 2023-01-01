@@ -1,0 +1,209 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; STRCMP, STREXCH, STRCAT functions test program
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+STR1:      word 0E000
+STR2:      word 0E100
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+
+; GETS function: reads a line and stores the string
+;                at memory address passed in R1
+
+GETS:      LDBI R0 0A           ; void gets (char *str)
+L_GETS:    INB R2 0001
+           TSTI 0001     
+           JMPNZ L_GETS
+           STBR R2 R1    
+           SUB R0 R2
+           JMPZ END_GETS   
+           INC R1
+           JMP L_GETS
+END_GETS:  LDBI R2 0
+           STBR R2 R1    
+           RET
+
+; PUTS function: sends to the output device the string 
+;                whose address is passed in R1
+
+PUTS:      LDBR R2 R1           ; void puts (char *str)
+           JMPZ END_PUTS
+L_PUTS:    OUTB R2 0000
+           TSTO 0000     
+           JMPNZ L_PUTS
+           INC R1
+           JMP PUTS
+END_PUTS:  LDBI R2 0A
+LEND_PUTS: OUTB R2 0000
+           TSTO 0000     
+           JMPNZ LEND_PUTS
+           RET
+
+; STRCAT function: appends the string addressed by R2 
+;                  at the end of the one addressed by R1
+
+STRCAT:    LDBR R10 R1
+           JMPZ SCAT_L1
+           INC R1
+           JMP STRCAT
+SCAT_L1:   LDBR R10 R2
+           JMPZ SCAT_L2
+           STBR R10 R1
+           INC R1
+           INC R2
+           JMP SCAT_L1
+SCAT_L2:   STBR R10 R1           ; copy the '\0'
+           RET
+
+; STREXCH function: exchanges the strings addressed by R1 and R2
+
+TEMPSTRADDR:  word 0F800    
+
+STREXCH:   PUSH R1               ; save address of string 1
+           PUSH R2               ; save address of string 2
+           LDWA R2 TEMPSTRADDR
+           CALL STRCPY           ; copy string 1 into temp
+           POP R1                ; exchange the addresses
+           POP R2
+           PUSH R1               ; save address of string 2 (now in R1)
+           CALL STRCPY           ; copy string 2 into string 1
+           POP R2
+           LDWA R1 TEMPSTRADDR
+           CALL STRCPY           ; copy temp into string 2
+           RET
+
+STRCPY:    LDBR R10 R1
+           STBR R10 R2
+           JMPZ END_SCPY
+           INC R1
+           INC R2
+           JMP STRCPY
+END_SCPY:  RET
+
+
+
+; STRCMP function: compares the strings addressed by R1 and R2
+;                  (returns 0 if equal)
+
+STRCMP:    MV R1 R11   ; save R1 in R11
+           MV R2 R12   ; save R2 in R12
+L_STRCMP:  LDBR R3 R11
+           LDBR R4 R12
+           MV R3 R0
+           SUB R4 R0
+           JMPNZ E_STRCMP
+           MV R3 R5    ; end of string?
+           JMPZ E_STRCMP
+           MV R4 R5
+           JMPZ E_STRCMP
+           INC R11
+           INC R12
+           JMP L_STRCMP
+E_STRCMP:  RET
+
+
+
+
+; DIV function: R0 <- R1 / R2 and  R15 <- R1 % R2 
+; NOTE: only non-negative numbers are supported
+
+DIV:       LDWI R0 0            ; int div (int a, int b)
+           MV R1 R15
+L_DIV:     MV R15 R3
+           SUB R2 R3
+           JMPN END_DIV
+           SUB R2 R15
+           INC R0
+           JMP L_DIV
+END_DIV:   RET
+
+; WRITENUM function: writes on the output device the number 
+;                    whose value is passed in R1
+; NOTE: only non-negative numbers are supported
+
+WRITENUM:  LDWI R10 1           ; void writenum (int n)
+L1_WRNUM:  LDWI R11 09
+           SUB R1 R11
+           JMPNN L2_WRNUM
+           LDWI R2 0A
+           PUSH R10
+           CALL DIV
+           POP R10
+           MV R0 R1
+           PUSH R15
+           INC R10
+           JMP L1_WRNUM
+L2_WRNUM:  LDWI R11 30
+           ADD R1 R11
+L3_WRNUM:  OUTB R11 0000
+           TSTO 0000
+           DEC R10
+           JMPZ E_WRNUM
+           POP R1               ; was R15, stored in the stack
+           JMP L2_WRNUM
+E_WRNUM:   RET
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           LDWA R1 STR1
+           CALL GETS
+
+           LDWA R1 STR2
+           CALL GETS
+
+           ; test strcmp
+           LDWA R1 STR1
+           LDWA R2 STR2
+           CALL STRCMP
+           MV R0 R1
+           CALL WRITENUM
+
+           ; test strexch
+           LDWA R1 STR1
+           LDWA R2 STR2
+           CALL STREXCH
+           LDWA R1 STR1
+           CALL PUTS
+           LDWA R1 STR2
+           CALL PUTS
+
+           ; test strcat
+           LDWA R1 STR1
+           LDWA R2 STR2
+           CALL STRCAT
+           LDWA R1 STR1
+           CALL PUTS
+           LDWA R1 STR2
+           CALL PUTS
+
+           ; the end
+           HLT

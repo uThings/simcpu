@@ -1,0 +1,129 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+STACKADDR: word 0F000           ; beginning of stack area
+INBUFADDR: word 0E000           ; beginning of input buffer area
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+
+; GETS function: reads a line and stores the string
+;                at memory address passed in R1
+
+GETS:      LDBI R0 0A           ; void gets (char *str)
+L_GETS:    INB R2 0001
+           TSTI 0001     
+           JMPNZ L_GETS
+           STBR R2 R1    
+           SUB R0 R2
+           JMPZ END_GETS   
+           INC R1
+           JMP L_GETS
+END_GETS:  LDBI R2 0
+           STBR R2 R1    
+           RET
+
+; HEX2INT function: returns in R0 the value ot the hexadecimal number
+;                   represented by the string whose address is passed in R1
+
+HEX2INT:   LDBI R15 30       ; '0'
+           LDBI R14 41       ; 'A'
+           LDBI R13 0A       ; offset of values represented by the digits A-F
+           LDWI R0 0
+
+L_H2I:     LDBR R2 R1
+           JMPZ END_H2I
+           INC R1
+           MV R2 R3          ; save the digit value
+           SUB R14 R2        ; subtract the 'A' ASCII code value
+           JMPN D_H2I        ; if negative, it'a decimal digit (0-9)
+           ADD R13 R2        ; add the offset 
+                             ; (now R2 contains the digit value)
+           JMP BASE_H2I
+
+D_H2I:     MV R3 R2          ; restore R2
+           SUB R15 R2        ; subtract the '0' ASCII code value
+                             ; (now R2 contains the digit value)
+
+BASE_H2I:  LSH R0            ; myltiply R0 by 16
+           LSH R0            ; ...
+           LSH R0            ; ...
+           LSH R0            ; ...
+           ADD R2 R0
+           JMP L_H2I
+
+END_H2I:   RET
+
+; DIV function: R0 <- R1 / R2 and  R15 <- R1 % R2 
+; NOTE: only non-negative numbers are supported
+
+DIV:       LDWI R0 0            ; int div (int a, int b)
+           MV R1 R15
+L_DIV:     MV R15 R3
+           SUB R2 R3
+           JMPN END_DIV
+           SUB R2 R15
+           INC R0
+           JMP L_DIV
+END_DIV:   RET
+
+; WRITENUM function: writes on the output device the number 
+;                    whose value is passed in R1
+; NOTE: only non-negative numbers are supported
+
+WRITENUM:  LDWI R10 1           ; void writenum (int n)
+L1_WRNUM:  LDWI R11 09
+           SUB R1 R11
+           JMPNN L2_WRNUM
+           LDWI R2 0A
+           PUSH R10
+           CALL DIV
+           POP R10
+           MV R0 R1
+           PUSH R15
+           INC R10
+           JMP L1_WRNUM
+L2_WRNUM:  LDWI R11 30
+           ADD R1 R11
+L3_WRNUM:  OUTB R11 0000
+           TSTO 0000
+           DEC R10
+           JMPZ E_WRNUM
+           POP R1               ; was R15, stored in the stack
+           JMP L2_WRNUM
+E_WRNUM:   RET
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+           LDWA R1 INBUFADDR
+           PUSH R1
+           CALL GETS
+           POP R1
+           CALL HEX2INT 
+           MV R0 R1
+           CALL WRITENUM
+           HLT

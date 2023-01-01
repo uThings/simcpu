@@ -1,0 +1,327 @@
+0112
+00 | STACKADDR: word 0F000           ; beginning of stack area
+F0 | 
+00 | GETS:      LDBI R0 0A           ; void gets (char *str)
+11 | 
+0A | 
+20 | L_GETS:    INB R2 0001
+81 | 
+01 | 
+00 | 
+00 |            TSTI 0001     
+84 | 
+01 | 
+00 | 
+F6 |            JMPNZ L_GETS
+C3 | 
+21 |            STBR R2 R1    
+33 | 
+02 |            SUB R0 R2
+41 | 
+04 |            JMPZ END_GETS   
+C2 | 
+10 |            INC R1
+48 | 
+EC |            JMP L_GETS
+C1 | 
+20 | END_GETS:  LDBI R2 0
+11 | 
+00 | 
+21 |            STBR R2 R1    
+33 | 
+00 |            RET
+C9 | 
+21 | PUTS:      LDBR R2 R1           ; void puts (char *str)
+31 | 
+0E |            JMPZ END_PUTS
+C2 | 
+20 | L_PUTS:    OUTB R2 0000
+83 | 
+00 | 
+00 | 
+00 |            TSTO 0000     
+85 | 
+00 | 
+00 | 
+F6 |            JMPNZ L_PUTS
+C3 | 
+10 |            INC R1
+48 | 
+EE |            JMP PUTS
+C1 | 
+20 | END_PUTS:  LDBI R2 0A
+11 | 
+0A | 
+20 | LEND_PUTS: OUTB R2 0000
+83 | 
+00 | 
+00 | 
+00 |            TSTO 0000     
+85 | 
+00 | 
+00 | 
+F6 |            JMPNZ LEND_PUTS
+C3 | 
+00 |            RET
+C9 | 
+4F | OVFLMSG:   byte 4F              ; 'Overflow' (error message)
+76 |            byte 76
+65 |            byte 65
+72 |            byte 72
+66 |            byte 66
+6C |            byte 6C
+6F |            byte 6F
+77 |            byte 77
+00 |            byte 00
+10 | OVERFLOW:  LDWI R1 OVFLMSG
+10 | 
+41 | 
+00 | 
+00 |            CALL PUTS
+C8 | 
+20 | 
+00 | 
+00 |            HLT
+CF | 
+F0 | ATOI:      LDBI R15 30          ; '0'
+11 | 
+30 | 
+E0 |            LDBI R14 2D          ; '-'
+11 | 
+2D | 
+00 |            LDWI R0 0
+10 | 
+00 | 
+00 | 
+21 | L_ATOI:    LDBR R2 R1
+31 | 
+2E |            SUB R2 R14           ; negative?
+41 | 
+02 |            JMPNZ LABS_ATOI
+C3 | 
+10 |            INC R1
+48 | 
+21 | LABS_ATOI: LDBR R2 R1
+31 | 
+20 |            JMPZ SIGN_ATOI
+C2 | 
+F2 |            SUB R15 R2
+41 | 
+04 |            MV R0 R4
+04 | 
+00 |            LSH R0               ; R0 * 10 = R0 + R0 + R0 << 3
+4A | 
+22 |            JMPC ATOI_OVFL
+C6 | 
+00 |            LSH R0
+4A | 
+1E |            JMPC ATOI_OVFL
+C6 | 
+00 |            LSH R0
+4A | 
+1A |            JMPC ATOI_OVFL
+C6 | 
+40 |            ADD R4 R0
+40 | 
+16 |            JMPC ATOI_OVFL
+C6 | 
+40 |            ADD R4 R0
+40 | 
+12 |            JMPC ATOI_OVFL
+C6 | 
+20 |            ADD R2 R0
+40 | 
+0E |            JMPC ATOI_OVFL
+C6 | 
+10 |            INC R1
+48 | 
+DC |            JMP LABS_ATOI
+C1 | 
+ED | SIGN_ATOI: MV R14 R13
+04 | 
+04 |            JMPNZ END_ATOI
+C3 | 
+0E |            SUB R0 R14           ; R14 here contains zero
+41 | 
+E0 |            MV R14 R0 
+04 | 
+00 | END_ATOI:  RET
+C9 | 
+00 | ATOI_OVFL: CALL OVERFLOW
+C8 | 
+4A | 
+00 | 
+00 |            HLT
+CF | 
+00 | INBUFADDR: word 0E000           ; beginning of input buffer area
+E0 | 
+10 | READNUM:   LDWA R1 INBUFADDR    ; int readnum (void)
+20 | 
+9A | 
+00 | 
+10 |            PUSH R1              
+08 | 
+00 |            CALL GETS            
+C8 | 
+02 | 
+00 | 
+10 |            POP R1
+09 | 
+00 |            CALL ATOI
+C8 | 
+54 | 
+00 | 
+00 |            RET
+C9 | 
+00 | DIV:       LDWI R0 0            ; int div (int a, int b)
+10 | 
+00 | 
+00 | 
+1F |            MV R1 R15
+04 | 
+F3 | L_DIV:     MV R15 R3
+04 | 
+23 |            SUB R2 R3
+41 | 
+06 |            JMPN END_DIV
+C4 | 
+2F |            SUB R2 R15
+41 | 
+00 |            INC R0
+48 | 
+F4 |            JMP L_DIV
+C1 | 
+00 | END_DIV:   RET
+C9 | 
+A0 | WRITENUM:  LDWI R10 1           ; void writenum (int n)
+10 | 
+01 | 
+00 | 
+B0 | L1_WRNUM:  LDWI R11 09
+10 | 
+09 | 
+00 | 
+1B |            SUB R1 R11
+41 | 
+14 |            JMPNN L2_WRNUM
+C5 | 
+20 |            LDWI R2 0A
+10 | 
+0A | 
+00 | 
+A0 |            PUSH R10
+08 | 
+00 |            CALL DIV
+C8 | 
+AE | 
+00 | 
+A0 |            POP R10
+09 | 
+01 |            MV R0 R1
+04 | 
+F0 |            PUSH R15
+08 | 
+A0 |            INC R10
+48 | 
+E4 |            JMP L1_WRNUM
+C1 | 
+B0 | L2_WRNUM:  LDWI R11 30
+10 | 
+30 | 
+00 | 
+1B |            ADD R1 R11
+40 | 
+B0 | L3_WRNUM:  OUTB R11 0000
+83 | 
+00 | 
+00 | 
+00 |            TSTO 0000
+85 | 
+00 | 
+00 | 
+A0 |            DEC R10
+49 | 
+04 |            JMPZ E_WRNUM
+C2 | 
+10 |            POP R1               ; was R15, stored in the stack
+09 | 
+EA |            JMP L2_WRNUM
+C1 | 
+00 | E_WRNUM:   RET
+C9 | 
+00 | MUL:       LDWI R0 0            ; int mul (int a, int b)
+10 | 
+00 | 
+00 | 
+1F |            MV R1 R15
+04 | 
+08 | L_MUL:     JMPZ END_MUL
+C2 | 
+20 |            ADD R2 R0
+40 | 
+06 |            JMPC MUL_OVFL
+C6 | 
+10 |            DEC R1
+49 | 
+F6 |            JMP L_MUL
+C1 | 
+00 | END_MUL:   RET
+C9 | 
+00 | MUL_OVFL:  CALL OVERFLOW
+C8 | 
+4A | 
+00 | 
+00 |            HLT
+CF | 
+F0 | START:     LDWA R15 STACKADDR   ; stack initialization
+20 | 
+00 | 
+00 | 
+F0 |            SPWR R15             ; NOTE: every function receives input
+0E | 
+00 |            CALL READNUM
+C8 | 
+9C | 
+00 | 
+01 |            MV R0 R1
+04 | 
+00 |            CALL FACTORIAL
+C8 | 
+2A | 
+01 | 
+01 |            MV R0 R1
+04 | 
+00 |            CALL WRITENUM
+C8 | 
+C2 | 
+00 | 
+00 |            HLT
+CF | 
+12 | FACTORIAL: MV R1 R2             ; int factorial (int n)
+04 | 
+12 |            JMPZ E_FACT
+C2 | 
+10 |            PUSH R1
+08 | 
+10 |            DEC R1
+49 | 
+00 |            CALL FACTORIAL
+C8 | 
+2A | 
+01 | 
+10 |            POP R1
+09 | 
+02 |            MV R0 R2
+04 | 
+00 |            CALL MUL
+C8 | 
+FA | 
+00 | 
+00 |            RET
+C9 | 
+00 | E_FACT:    LDWI R0 1
+10 | 
+01 | 
+00 | 
+00 |            RET
+C9 | 

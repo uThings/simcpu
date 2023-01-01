@@ -1,0 +1,155 @@
+006B
+00 | STACKADDR: word 0F000           ; beginning of stack area
+F0 | 
+21 | PUTS:      LDBR R2 R1           ; void puts (char *str)
+31 | 
+0E |            JMPZ END_PUTS
+C2 | 
+20 | L_PUTS:    OUTB R2 0000
+83 | 
+00 | 
+00 | 
+00 |            TSTO 0000     
+85 | 
+00 | 
+00 | 
+F6 |            JMPNZ L_PUTS
+C3 | 
+10 |            INC R1
+48 | 
+EE |            JMP PUTS
+C1 | 
+20 | END_PUTS:  LDBI R2 0A
+11 | 
+0A | 
+20 | LEND_PUTS: OUTB R2 0000
+83 | 
+00 | 
+00 | 
+00 |            TSTO 0000     
+85 | 
+00 | 
+00 | 
+F6 |            JMPNZ LEND_PUTS
+C3 | 
+00 |            RET
+C9 | 
+7A | zero:    byte 7A    ; memory offset = 00
+65 |          byte 65
+72 |          byte 72
+6F |          byte 6F
+00 |          byte 0
+75 | uno:     byte 75    ; 05
+6E |          byte 6E
+6F |          byte 6F
+00 |          byte 0
+64 | due:     byte 64    ; 09
+75 |          byte 75
+65 |          byte 65
+00 |          byte 0
+74 | tre:     byte 74    ; 0D
+72 |          byte 72
+65 |          byte 65
+00 |          byte 0
+71 | quattro: byte 71    ; 11
+75 |          byte 75
+61 |          byte 61
+74 |          byte 74
+74 |          byte 74
+72 |          byte 72
+6F |          byte 6F
+00 |          byte 0
+63 | cinque:  byte 63    ; 19
+69 |          byte 69
+6E |          byte 6E
+71 |          byte 71
+75 |          byte 75
+65 |          byte 65
+00 |          byte 0
+73 | sei:     byte 73    ; 20
+65 |          byte 65
+69 |          byte 69
+00 |          byte 0
+73 | sette:   byte 73    ; 24
+65 |          byte 65
+74 |          byte 74
+74 |          byte 74
+65 |          byte 65
+00 |          byte 0
+6F | otto:    byte 6F    ; 2A
+74 |          byte 74
+74 |          byte 74
+6F |          byte 6F
+00 |          byte 0
+6E | nove:    byte 6E    ; 2F
+6F |          byte 6F
+76 |          byte 76
+65 |          byte 65
+00 |          byte 0
+23 | ind_str:  word zero
+00 | 
+28 |           word uno
+00 | 
+2C |           word due
+00 | 
+30 |           word tre
+00 | 
+34 |           word quattro
+00 | 
+3C |           word cinque
+00 | 
+43 |           word sei
+00 | 
+47 |           word sette
+00 | 
+4D |           word otto
+00 | 
+52 |           word nove
+00 | 
+F0 | start:       LDWA R15 STACKADDR
+20 | 
+00 | 
+00 | 
+F0 |              SPWR R15
+0E | 
+10 | polling:     INB R1 0001
+81 | 
+01 | 
+00 | 
+00 |              TSTI 0001
+84 | 
+01 | 
+00 | 
+F6 |              JMPNZ polling
+C3 | 
+10 |              PUSH R1
+08 | 
+00 |              CALL digit2text
+C8 | 
+85 | 
+00 | 
+10 |              POP R1  ;  for future extensions
+09 | 
+00 |              HLT
+CF | 
+F0 | digit2text:  LDBI R15 30
+11 | 
+30 | 
+F1 |              SUB R15 R1      ; now in R1 the numerical value is stored
+41 | 
+10 |              LSH R1          ; R1 = R1 * 2
+4A | 
+20 |              LDWI R2 ind_str
+10 | 
+57 | 
+00 | 
+21 |              ADD R2 R1
+40 | 
+11 |              LDWR R1 R1      ; or: LDWR R10 R1  +  MV R10 R1
+30 | 
+00 |              CALL PUTS
+C8 | 
+02 | 
+00 | 
+00 |              RET
+C9 | 

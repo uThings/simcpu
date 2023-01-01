@@ -1,0 +1,101 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assemply language examples
+;
+;******************************************************************
+
+; Computes Fibonacci succession up to Fn (n read from input device):
+; n>1 is stored in R1 and Fn is left in R0
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+#include "readnum.ixx"
+#include "writenum.ixx"
+#include "puts.ixx"
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           ; read n
+           LDWA R1 INBUFADDR
+           PUSH R1
+           CALL READNUM
+           POP R1
+
+           MV R0 R1
+           CALL LIST_FIBONACCI
+
+           ; the end
+           HLT
+
+
+NULLSTRING:      byte 0    ; '\0'
+
+LIST_FIBONACCI:  LDWI R10 0  ; F0
+                 LDWI R11 1  ; F1
+                 LDWI R2  1  ; i
+                 PUSH R1
+                 PUSH R2
+                 PUSH R10
+                 PUSH R11
+                 LDWI R1 0
+                 CALL WRITENUM
+                 LDWI R1 NULLSTRING
+                 CALL PUTS
+                 LDWI R1 1
+                 CALL WRITENUM
+                 LDWI R1 NULLSTRING
+                 CALL PUTS
+                 POP R11
+                 POP R10
+                 POP R2
+                 POP R1
+
+LOOP:            MV R2 R15  ; save the counter
+                 SUB R1 R15
+                 JMPZ END
+                 MV R11 R12
+                 ADD R10 R12
+                 MV R11 R10
+                 MV R12 R11
+                 PUSH R1
+                 PUSH R2
+                 PUSH R10
+                 PUSH R11
+                 MV R12 R1
+                 CALL WRITENUM
+                 LDWI R1 NULLSTRING
+                 CALL PUTS
+                 POP R11
+                 POP R10
+                 POP R2
+                 POP R1
+                 INC R2
+                 JMP LOOP
+
+END:             MV R11 R0   ; return Fn
+                 HLT

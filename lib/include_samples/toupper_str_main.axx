@@ -1,0 +1,57 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; TOUPPER_STRLEN function test program
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+INBUFADDR: word 0E000           ; beginning of input buffer area
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+#include "gets.ixx"
+#include "puts.ixx"
+#include "toupper_str.ixx"
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           LDWA R1 INBUFADDR
+           PUSH R1
+           CALL GETS
+           POP R1
+
+           PUSH R1
+           CALL TOUPPER_STR
+           POP R1
+
+           PUSH R1
+           CALL PUTS
+           POP R1
+
+           ; the end
+           HLT

@@ -1,0 +1,133 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+STACKADDR: word 0F000           ; beginning of stack area
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+
+; DIV function: R0 <- R1 / R2 and  R15 <- R1 % R2 
+; NOTE: only non-negative numbers are supported
+
+DIV:       LDWI R0 0            ; int div (int a, int b)
+           MV R1 R15
+L_DIV:     MV R15 R3
+           SUB R2 R3
+           JMPN END_DIV
+           SUB R2 R15
+           INC R0
+           JMP L_DIV
+END_DIV:   RET
+
+; WRITENUM function: writes on the output device the number 
+;                    whose value is passed in R1
+; NOTE: only non-negative numbers are supported
+
+WRITENUM:  LDWI R10 1           ; void writenum (int n)
+L1_WRNUM:  LDWI R11 09
+           SUB R1 R11
+           JMPNN L2_WRNUM
+           LDWI R2 0A
+           PUSH R10
+           CALL DIV
+           POP R10
+           MV R0 R1
+           PUSH R15
+           INC R10
+           JMP L1_WRNUM
+L2_WRNUM:  LDWI R11 30
+           ADD R1 R11
+L3_WRNUM:  OUTB R11 0000
+           TSTO 0000
+           DEC R10
+           JMPZ E_WRNUM
+           POP R1               ; was R15, stored in the stack
+           JMP L2_WRNUM
+E_WRNUM:   RET
+
+; PUTS function: sends to the output device the string 
+;                whose address is passed in R1
+
+PUTS:      LDBR R2 R1           ; void puts (char *str)
+           JMPZ END_PUTS
+L_PUTS:    OUTB R2 0000
+           TSTO 0000     
+           JMPNZ L_PUTS
+           INC R1
+           JMP PUTS
+END_PUTS:  LDBI R2 0A
+LEND_PUTS: OUTB R2 0000
+           TSTO 0000     
+           JMPNZ LEND_PUTS
+           RET
+
+; ABS function: R0 <- abs(R1)
+
+ABS:       MV R1 R0          ; int abs (int a)
+           JMPN ABS_NEG
+           JMP END_ABS
+ABS_NEG:   LDWI R0 0
+           SUB R1 R0
+END_ABS:   RET
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+N1:        word 08001
+N2:        word 00001
+N3:        word 0FFFF
+N4:        word 0FFF0
+SPACE:     byte 020
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+           LDWA R1 N1
+           CALL ABS
+           MV R0 R1
+           CALL WRITENUM
+           LDBA R1 SPACE
+           CALL PUTS
+
+           LDWA R1 N2
+           CALL ABS
+           MV R0 R1
+           CALL WRITENUM
+           LDBA R1 SPACE
+           CALL PUTS
+
+           LDWA R1 N3
+           CALL ABS
+           MV R0 R1
+           CALL WRITENUM
+           LDBA R1 SPACE
+           CALL PUTS
+
+           LDWA R1 N4
+           CALL ABS
+           MV R0 R1
+           CALL WRITENUM
+           LDBA R1 SPACE
+           CALL PUTS
+
+           HLT

@@ -1,0 +1,281 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.73 [en] (Windows NT 5.0; U) [Netscape]">
+   <meta name="FORMATTER" content="Microsoft FrontPage 2.0">
+   <meta name="Author" content="Pier Luca Montessoro">
+   <title>Pier Luca Montessoro: SimCPU (simulatore di CPU RISC e assemblatore)</title>
+</head>
+<!-- <body bgcolor="#F2F2F2" background="whttxtr2.jpg" stylesrc="_private/style.htm"> -->
+
+<h1>
+<font color="#FF0000">SimCPU: simulatore di CPU RISC e assemblatore</font></h1>
+
+<h2>
+<i><font color="#000000">Pier Luca Montessoro</font></i></h2>
+
+<h2>
+Introduzione</h2>
+SimCPU &egrave; un simulatore di CPU RISC a 16 bit che permette di analizzare
+in modo dettagliato il funzionamento a basso livello di un calcolatore.
+La simulazione &egrave; organizzata in modo da essere estremamente aderente
+alla realt&agrave;: il file contenente il programma in linguaggio macchina
+(di SimCPU) viene caricato in memoria, il program counter viene inizializzato
+al valore indicato come "entry point" in tale file, ed infine viene passato
+il controllo alla console di simulazione con cui l'utente pu&ograve; controllare
+l'avanzamento del simulatore.
+<p>Oltre ai file di estensione .axx, contenenti i sorgenti in lunguaggio
+assembler, anche i file di estensione .exx, contenenti il linguaggio macchina,
+sono in formato ASCII e quindi possono essere scritti a mano (utile esercizio
+per comprendere gli aspetti di dettaglio del funzionamento di un elaboratore),
+oppure possono essere generati mediante l'assemblatore a partire da un
+file sorgente in linguaggio assembler.
+<p>Il simulatore e l'assemblatore sono scritti in linguaggio C utilizzando
+uno stile di programmazione semplice e leggibile, in modo che gli studenti
+che lo desiderano possano analizzarne il codice per comprendere come funziona
+un simulatore ed eventualmente estenderne le funzionalit&agrave; (per informazioni
+sui file sorgenti di SimCPU e per le istruzioni per la compilazione si
+faccia riferimento al file readme.txt.
+
+<h2>
+Per installare ed eseguire SimCPU</h2>
+
+<ol>
+<li>
+Copiare SimCPU sul proprio hard disk nel direttorio scelto per l'installazione
+(ad esempio C:\SIMCPU);
+</li>
+
+<li>
+Aprire una finestra MS-DOS e posizionare il direttorio di lavoro su quello
+di simcpu\run (es.: cd C:\SIMCPU\RUN);
+</li>
+
+<li>
+Lanciare l'assemblatore (assembler.exe) e il simulatore (simcpu.exe) scrivendo
+il nome del file da assemblare/eseguire come parametro sulla linea di comando.
+&Egrave; anche possibile eseguire tali programmi direttamente da Windows
+Explorer mediante doppio click; in tal caso viene richiesto il nome del
+file .axx (sorgente assembler per l'assemblatore) o .exx (file contenente
+il linguaggio macchina per il simulatore) che va scritto senza estensione.
+</li>
+</ol>
+
+<h2>
+Funzionalit&agrave; di tracing e debugging dei programmi</h2>
+Una delle funzionalit&agrave; pi&ugrave; interessanti di SimCPU &egrave;
+la possibilit&agrave; di analizzare in detteglio la successione dei cicli
+macchina che concorrono all'esecuzione di un'istruzione. Tale funzionalit&agrave;
+viene attivata mediante il comando "set trace_mode extended" (v. esempio
+3 nel seguito).
+<p>La funzionalit&agrave; di tracing pu&ograve; anche essere attivata in
+modalit&agrave; "instruction". In tal caso, all'inizio del ciclo di esecuzione
+di ogni istruzione, viene visualizzato il contenuto della memoria contenente
+l'istruzione da eseguire. Se il file contenente il codice macchina &egrave;
+stato generato con l'assemblatore di SimCPU, viene anche visualizzato il
+relativo codice sorgente assembler. Tale funzionalit&agrave;, in combinazione
+con i breakpoint (comando "set breakpoint ..."), con l'esecuzione step-by-step
+(comando "run next" o semplicemente "next") e con i comandi per analizzare
+il contenuto della memoria e lo stato della CPU (comandi "display memory
+..." e "display cpu" o semplicemente "cpu"), permette un facile debugging
+dei programmi.
+<h2>
+Esempi</h2>
+Nel seguito, in rosso sono evidenziati i comandi scritti dall'utente per
+procedere nella simulazione e in blu le note aggiunte per documentare gli
+esempi.
+<p>Ogni comando pu&ograve; essere abbreviato (al limite, anche ad una sola
+lettera). Se si termina la riga con un comando incompleto, l'interprete
+ne chiede il completamento indicando le opzioni disponibili per il parametro
+successivo.
+<h3>
+Esempio 1: sum3.exx</h3>
+Questo programma somma i valori di un vettore di tre elementi e lascia
+il risultato nel registro R10.
+<br>Nei file eseguibili di SimCPU ad ogni byte pu&ograve; essere associata
+una stringa di commento, per esempio contenente il codice sorgente assembly
+(questo avviene automaticamente utilizzando l'assemblatore fornito). Tale
+commento viene letto dal simulatore e mostrato quando si visualizza il
+contanuto della memoria (comando "display memory ..."), come illustrato
+in questo esempio.
+<p><tt>C:\simcpu><font color="#FF0000">simcpu sum3</font></tt>
+<br><tt><font color="#3366FF">(NOTA: se non viene fornito il nome di un
+file sulla linea di comando, il programma lo richiede in modo interattivo)</font></tt>
+<p><tt>SIMCPU 2.0 starting...</tt>
+<p><tt>ENTERING COMMAND MODE: current program counter = 0005</tt>
+<br><tt>> <font color="#FF0000">help</font></tt>
+<p><tt>Available commands (can be abbreviated down to the first letter
+only):</tt>
+<p><tt>&nbsp;&nbsp; Set Trace Instruction</tt>
+<br><tt>&nbsp;&nbsp; Set Trace Extended</tt>
+<br><tt>&nbsp;&nbsp; Set Trace Disabled</tt>
+<br><tt>&nbsp;&nbsp; Set Breakpoint &lt;address (hex)> Enabled</tt>
+<br><tt>&nbsp;&nbsp; Set Breakpoint &lt;address (hex)> Disabled</tt>
+<br><tt>&nbsp;&nbsp; Run Next</tt>
+<br><tt>&nbsp;&nbsp; Run Forever</tt>
+<br><tt>&nbsp;&nbsp; Load Input-buffer $&lt;string, up to the end of line></tt>
+<br><tt>&nbsp;&nbsp; Display Memory &lt;address (hex)> &lt;length (dec)></tt>
+<br><tt>&nbsp;&nbsp; Display Cpu</tt>
+<br><tt>&nbsp;&nbsp; Display Input-buffer</tt>
+<br><tt>&nbsp;&nbsp; EXit</tt>
+<br><tt>&nbsp;&nbsp; Quit</tt>
+<br><tt>&nbsp;&nbsp; Help</tt>
+<br><tt>&nbsp;&nbsp; Control-C (to enter command line mode while simulation
+is running)</tt>
+<p><tt>&nbsp;&nbsp; SHORTCUTS:</tt>
+<br><tt>&nbsp;&nbsp; Next = Run Next</tt>
+<br><tt>&nbsp;&nbsp; Cpu = Display Cpu</tt>
+<p><tt>> <font color="#FF0000">d c</font></tt>
+<br><tt>CPU status: PC = 0005&nbsp;&nbsp; IR = 0000&nbsp;&nbsp; SP = 0000</tt>
+<br><tt>CPU status: zero = 0&nbsp;&nbsp; negative = 0&nbsp;&nbsp; carry
+= 0&nbsp;&nbsp; overflow = 0</tt>
+<br><tt>CPU status: R0&nbsp; = 0000&nbsp;&nbsp; R1&nbsp; = 0000&nbsp;&nbsp;
+R2&nbsp; = 0000&nbsp;&nbsp; R3&nbsp; = 0000</tt>
+<br><tt>CPU status: R4&nbsp; = 0000&nbsp;&nbsp; R5&nbsp; = 0000&nbsp;&nbsp;
+R6&nbsp; = 0000&nbsp;&nbsp; R7&nbsp; = 0000</tt>
+<br><tt>CPU status: R8&nbsp; = 0000&nbsp;&nbsp; R9&nbsp; = 0000&nbsp;&nbsp;
+R10 = 0000&nbsp;&nbsp; R11 = 0000</tt>
+<br><tt>CPU status: R12 = 0000&nbsp;&nbsp; R13 = 0000&nbsp;&nbsp; R14 =
+0000&nbsp;&nbsp; R15 = 0000</tt>
+<br><tt>> <font color="#FF0000">d m 0 29</font></tt>
+<br><tt>MEM[0000]: 03 |&nbsp; N:&nbsp;&nbsp;&nbsp;&nbsp; word 3</tt>
+<br><tt>MEM[0001]: 00 |</tt>
+<br><tt>MEM[0002]: 05 |&nbsp; DATA:&nbsp; byte 5</tt>
+<br><tt>MEM[0003]: 09 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+byte 9</tt>
+<br><tt>MEM[0004]: 0C |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+byte 0C</tt>
+<br><tt>MEM[0005]: 10 |&nbsp; START: LDWA R1 N</tt>
+<br><tt>MEM[0006]: 20 |</tt>
+<br><tt>MEM[0007]: 00 |</tt>
+<br><tt>MEM[0008]: 00 |</tt>
+<br><tt>MEM[0009]: 20 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+LDWI R2 DATA</tt>
+<br><tt>MEM[000A]: 10 |</tt>
+<br><tt>MEM[000B]: 02 |</tt>
+<br><tt>MEM[000C]: 00 |</tt>
+<br><tt>MEM[000D]: A0 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+LDWI R10 0</tt>
+<br><tt>MEM[000E]: 10 |</tt>
+<br><tt>MEM[000F]: 00 |</tt>
+<br><tt>MEM[0010]: 00 |</tt>
+<br><tt>MEM[0011]: B2 |&nbsp; LOOP:&nbsp; LDBR R11 R2</tt>
+<br><tt>MEM[0012]: 31 |</tt>
+<br><tt>MEM[0013]: BA |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ADD R11 R10</tt>
+<br><tt>MEM[0014]: 40 |</tt>
+<br><tt>MEM[0015]: 20 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+INC R2</tt>
+<br><tt>MEM[0016]: 48 |</tt>
+<br><tt>MEM[0017]: 10 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DEC R1</tt>
+<br><tt>MEM[0018]: 49 |</tt>
+<br><tt>MEM[0019]: F6 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+JMPNZ LOOP</tt>
+<br><tt>MEM[001A]: C3 |</tt>
+<br><tt>MEM[001B]: 00 |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+HLT</tt>
+<br><tt>MEM[001C]: CF |</tt>
+<br><tt>> <font color="#FF0000">r f</font></tt>
+<p><tt>ENTERING COMMAND MODE: current program counter = 001D</tt>
+<br><tt>> <font color="#FF0000">d c</font></tt>
+<br><tt>CPU status: PC = 001D&nbsp;&nbsp; IR = CF00&nbsp;&nbsp; SP = 0000</tt>
+<br><tt>CPU status: zero = 1&nbsp;&nbsp; negative = 0&nbsp;&nbsp; carry
+= 0&nbsp;&nbsp; overflow = 0</tt>
+<br><tt>CPU status: R0&nbsp; = 0000&nbsp;&nbsp; R1&nbsp; = 0000&nbsp;&nbsp;
+R2&nbsp; = 0005&nbsp;&nbsp; R3&nbsp; = 0000</tt>
+<br><tt>CPU status: R4&nbsp; = 0000&nbsp;&nbsp; R5&nbsp; = 0000&nbsp;&nbsp;
+R6&nbsp; = 0000&nbsp;&nbsp; R7&nbsp; = 0000</tt>
+<br><tt>CPU status: R8&nbsp; = 0000&nbsp;&nbsp; R9&nbsp; = 0000&nbsp;&nbsp;
+R10 = 001A&nbsp;&nbsp; R11 = 000C</tt>
+<br><tt>CPU status: R12 = 0000&nbsp;&nbsp; R13 = 0000&nbsp;&nbsp; R14 =
+0000&nbsp;&nbsp; R15 = 0000</tt>
+<br><tt>> <font color="#FF0000">q</font></tt>
+<p><tt><font color="#3366FF">(A questo punto il programma termina)</font></tt>
+<p><tt><font color="#3366FF">NOTA: per tracciare l'esecuzione di ogni singola
+istruzione si utilizzi il comando "set trace instruction" (abbreviato in
+"s t i") oppure "set trace extended" (abbreviato in "s t e")</font></tt>
+<br>&nbsp;
+<h3>
+Esempio 2: echo.exx</h3>
+Questo programma legge il buffer di input (che &egrave; gestito in polling)
+e ne copia il contenuto nel buffer di output.
+<p><tt>C:\simcpu><font color="#FF0000">simcpu echo</font></tt>
+<br><tt>SIMCPU 2.0 starting...</tt>
+<p><tt>ENTERING COMMAND MODE: current program counter = 0000</tt>
+<br><tt>> <font color="#FF0000">l i $hello</font></tt>
+<br><tt><font color="#3366FF">(NOTA: questo comando permette di caricare
+il buffer di input, a simulazione ferma)</font></tt>
+<br><tt>> <font color="#FF0000">d i</font></tt>
+<br><tt><font color="#3366FF">(NOTA: questo comando permette di visualizzare
+il contenuto del buffer di input, a simulazione ferma)</font></tt>
+<br><tt>68&nbsp; (ASCII 'h')</tt>
+<br><tt>65&nbsp; (ASCII 'e')</tt>
+<br><tt>6C&nbsp; (ASCII 'l')</tt>
+<br><tt>6C&nbsp; (ASCII 'l')</tt>
+<br><tt>6F&nbsp; (ASCII 'o')</tt>
+<br><tt>0A&nbsp; (ASCII '\n')</tt>
+<br><tt>> <font color="#FF0000">r f</font></tt>
+<br><tt>OUTPUT: 68 (ASCII h)</tt>
+<br><tt>OUTPUT: 65 (ASCII e)</tt>
+<br><tt>OUTPUT: 6C (ASCII l)</tt>
+<br><tt>OUTPUT: 6C (ASCII l)</tt>
+<br><tt>OUTPUT: 6F (ASCII o)</tt>
+<br><tt>OUTPUT: 0A</tt>
+<p><tt><font color="#3366FF">(NOTA: a questo punto la simulazione continua
+eseguendo il ciclo di polling in attesa di dati dal dispositivo di input.
+Con </font><font color="#FF0000">Control-C</font><font color="#3366FF">
+si riattiva la console interattiva del simulatore e si pu&ograve; riempire
+nuovamente il buffer)</font></tt>
+<p><tt>ENTERING COMMAND MODE: current program counter = 0004</tt>
+<br><tt>> <font color="#FF0000">d i</font></tt>
+<br><tt>(input buffer is empty)</tt>
+<br><tt>> <font color="#FF0000">l i $bye</font></tt>
+<br><tt>> <font color="#FF0000">r f</font></tt>
+<br><tt>OUTPUT: 62 (ASCII b)</tt>
+<br><tt>OUTPUT: 79 (ASCII y)</tt>
+<br><tt>OUTPUT: 65 (ASCII e)</tt>
+<br><tt>OUTPUT: 0A</tt>
+<p><tt><font color="#3366FF">(Ancora </font><font color="#FF0000">Control-C</font><font color="#3366FF">)</font></tt>
+<p><tt>ENTERING COMMAND MODE: current program counter = 0000</tt>
+<br><tt>> <font color="#FF0000">q</font></tt>
+<p><tt><font color="#3366FF">(A questo punto il programma termina)</font></tt>
+<br>&nbsp;
+<h3>
+Example 3: halt.exx</h3>
+Questo programma effettua semplicemente il fetch e l'esecusione di un'unica
+istruzione: halt. &Egrave; utile per provare la funzionalit&agrave; di
+tracciamento delle singole istruzione ("set trace instruction" e "set trace
+enabled").
+<p><tt>C:\simcpu><font color="#FF0000">simcpu halt</font></tt>
+<br><tt>SIMCPU 2.0 starting...</tt>
+<p><tt>ENTERING COMMAND MODE: current program counter = 0000</tt>
+<br><tt>> <font color="#FF0000">s t e</font></tt>
+<br><tt>> <font color="#FF0000">r f</font></tt>
+<p><tt>TRACE: starting new instruction, program counter = 0000</tt>
+<br><tt>TRACE: CF00 read from MEM[0000]</tt>
+<br><tt>TRACE: instruction_register set from 0000 to CF00</tt>
+<br><tt>TRACE: program counter set from 0000 to 0002</tt>
+<br><tt>TRACE: CF00 read from instruction_register (opcode: HLT)</tt>
+<br><tt>TRACE: halt instruction</tt>
+<p><tt>ENTERING COMMAND MODE: current program counter = 0002</tt>
+<br><tt>> <font color="#FF0000">q</font></tt>
+<p><tt><font color="#3366FF">(A questo punto il programma termina)</font></tt>
+<p><tt>C:\simcpu><font color="#FF0000">simcpu halt</font></tt>
+<br><tt>SIMCPU 2.0 starting...</tt>
+<p><tt>ENTERING COMMAND MODE: current program counter = 0000</tt>
+<br><tt>> <font color="#FF0000">s t i</font></tt>
+<br><tt>> <font color="#FF0000">r f</font></tt>
+<br><tt>Exexuting instruction at address 0000:</tt>
+<br><tt>MEM[0000]: 00 |&nbsp; start: HLT</tt>
+<br><tt>MEM[0001]: CF |</tt>
+<p><tt>ENTERING COMMAND MODE: current program counter = 0002</tt>
+<br><tt>> <font color="#FF0000">q</font></tt>
+<p><tt><font color="#3366FF">(A questo punto il programma termina)</font></tt>
+<p>
+<hr>
+<br>Per contattare l'autore: <a href="mailto:montessoro@uniud.it">montessoro@uniud.it</a>
+<br>Home page: <a href="http://www.montessoro.it">www.montessoro.it</a>
+</body>
+</html>

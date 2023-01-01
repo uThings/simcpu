@@ -1,0 +1,58 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; STRTRIM function test program
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+STR:       word 0E800
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+#include "gets.ixx"
+#include "puts.ixx"
+#include "readnum.ixx"
+#include "strtrim.ixx"
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           LDWA R1 STR
+           CALL GETS
+
+           CALL READNUM
+
+           MV R0 R2
+           LDWA R1 STR
+           
+           CALL STRTRIM
+           
+           LDWA R1 STR
+           CALL PUTS
+
+           ; the end
+           HLT

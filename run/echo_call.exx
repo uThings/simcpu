@@ -1,0 +1,43 @@
+0000
+00 | START:   LDWI R0 1000
+10 | 
+00 | 
+10 | 
+00 |          SPWR R0  ; inizialize stack pointer
+0E | 
+00 | LOOP:    CALL L1
+C8 | 
+12 | 
+00 | 
+00 |          CALL L2
+C8 | 
+1E | 
+00 | 
+00 |          BR LOOP
+C0 | 
+06 | 
+00 | 
+10 | L1:      INB R1 0001
+81 | 
+01 | 
+00 | 
+00 |          TSTI 0001
+84 | 
+01 | 
+00 | 
+F6 |          JMPNZ L1
+C3 | 
+00 |          RET
+C9 | 
+10 | L2:      OUTB R1 0000
+83 | 
+00 | 
+00 | 
+00 |          TSTO 0000
+85 | 
+00 | 
+00 | 
+F6 |          JMPNZ L2
+C3 | 
+00 |          RET
+C9 | 

@@ -1,0 +1,72 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+STACKADDR: word 0F000           ; beginning of stack area
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+#include "writenum.ixx"
+#include "puts.ixx"
+#include "abs.ixx"
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+N1:        word 08001
+N2:        word 00001
+N3:        word 0FFFF
+N4:        word 0FFF0
+SPACE:     byte 020
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+           LDWA R1 N1
+           CALL ABS
+           MV R0 R1
+           CALL WRITENUM
+           LDBA R1 SPACE
+           CALL PUTS
+
+           LDWA R1 N2
+           CALL ABS
+           MV R0 R1
+           CALL WRITENUM
+           LDBA R1 SPACE
+           CALL PUTS
+
+           LDWA R1 N3
+           CALL ABS
+           MV R0 R1
+           CALL WRITENUM
+           LDBA R1 SPACE
+           CALL PUTS
+
+           LDWA R1 N4
+           CALL ABS
+           MV R0 R1
+           CALL WRITENUM
+           LDBA R1 SPACE
+           CALL PUTS
+
+           HLT

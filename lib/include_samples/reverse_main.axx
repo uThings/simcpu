@@ -1,0 +1,74 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; STRCMP, STREXCH, STRCAT functions test program
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+STR:       word 0E000
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+#include "gets.ixx"
+#include "puts.ixx"
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           LDWA R1 STR
+           CALL GETS
+
+           LDWA R1 STR
+           CALL REVERSE
+
+           LDWA R1 STR
+           CALL PUTS
+
+           ; the end
+           HLT
+
+;****************************************************************************
+
+; REVERSE function
+
+REVERSE:   MV R1 R10            ; make a copy of the string address
+           XOR R0 R0
+           PUSH R0              ; place a terminator in the stack
+REV_L1:    LDBR R2 R10
+           JMPZ REV_L2
+           PUSH R2
+           INC R10
+           JMP REV_L1
+REV_L2:    MV R1 R10
+REV_L3:    POP R2
+           JMPZ REV_END
+           STBR R2 R10
+           INC R10
+           JMP REV_L3
+REV_END:   RET
+
+

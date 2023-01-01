@@ -1,0 +1,135 @@
+
+/*****************************************************************
+
+ Copyright 2001   PIER LUCA MONTESSORO
+
+ University of Udine
+ ITALY
+
+ montessoro@uniud.it
+ www.montessoro.it
+
+ This file is part of a freeware open source software package.
+ It can be freely used (as it is or modified) as long as this
+ copyright note is not removed.
+
+ SIMCPU: file formats
+
+******************************************************************/
+
+ASSEMBLY SOURCE FILE (.axx):
+----------------------------
+
+* Assembly directives:
+
+1) word <hex constant>  reserves a memory word (2 bytes) 
+                        initialized to <hex constant>
+
+2) byte <hex constant>  reserves a memory word (2 bytes)
+                        initialized to <hex constant>
+
+
+* Constants
+
+Only hexadecimal numbers are supported. They must 
+begin with a decimal digit.
+
+
+* Labels
+
+Labels identify the memory address of their position in the program.
+Labels must begin with a letter or a '_', may contain letters, digits
+or '_' and must end with ':'. When referred, a label must not end 
+with ':'.
+
+Examples:
+
+n1:   word 0
+n2:   byte 0A
+...
+loop: SUB R1 R2
+      JMPNN loop
+      LDWA R3 n1
+
+
+* Program entry point
+
+The entry point of the program (first instruction to be executed) 
+must be labelled as "start:".
+
+Example:
+
+data:   word 0
+start:  LDWA R0 data
+        ...
+
+
+* Comments
+
+Semicolon (';') delimits a comment ending at the end of line.
+
+Example:
+
+; reserve memory for variable 'data'
+data:   word 0
+
+; here begins the program
+start:  LDWA R0 data   ; load in R0 the value ov the variable 'data'
+
+
+* Notes
+ 
+Empty lines are allowed.
+The language is NOT case sensitive.
+
+
+
+EXECUTABLE FILE (.exx):
+-----------------------
+
+ASCII file, hexadecimal format, byte oriented (%2X). 
+The file contains the full or partial map of the memory starting
+from address 0000.
+
+Contents:
+
+<program starting address (hexadecimal format)>
+<byte at address 0000>
+<byte at address 0001>
+<byte at address 0002>
+...
+<byte at address N (N <= FFFF)>
+
+The hexadecimal codes are written at the beginning of each line.
+There is one blank line after the program starting address.
+
+Example:
+
+0002
+FF
+FF
+00
+01
+00
+00
+...
+
+
+
+The file may contain comments or the assembly line in order to support
+tracing and debugging functions. '|' is used to mark the starting point
+of the textual informations. Maximum length of each line is 255 characters, 
+including the '\n'.
+
+Example:
+
+0002
+FF    | N:      word FFFF  ; variable N is initialized to -1
+FF
+00    | start:  LDWA R0 N  ; load N in R0
+01
+00
+00
+...
+
+

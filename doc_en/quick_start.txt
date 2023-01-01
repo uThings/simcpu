@@ -1,0 +1,236 @@
+
+/*****************************************************************
+
+ Copyright 2001   PIER LUCA MONTESSORO
+
+ University of Udine
+ ITALY
+
+ montessoro@uniud.it
+ www.montessoro.it
+
+ This file is part of a freeware open source software package.
+ It can be freely used (as it is or modified) as long as this
+ copyright note is not removed.
+
+******************************************************************/
+
+-------------------------------------------------------------------
+
+ SimCPU quick start instructions (MS-DOS/Windows):
+
+ 1) Double click on SIMCPU.EXE in SimCPU/run directory on the CD
+    (no installation is needed to run the examples)
+
+ 2) Issue the name of one of the example provided and run the simulation
+    (see below)
+
+-------------------------------------------------------------------
+
+ SimCPU quick installation instructions (MS-DOS/Windows):
+
+ 1. Copy the contents of simcpu/run directory from the CD to a
+    working directory on your hard disk (e.g., C:\simcpu)
+
+ 2. Open a MS-DOS windows and set the default directory to the 
+    one where SimCPU has been copied (e.g., "cd C:\simcpu")
+
+ 3. Run SimCPU using one of the examples provided (see below) or develop 
+    your own programs.
+
+
+To write your own programs, refer to file formats and languages as 
+documented in the simcpu/doc directory.
+
+
+To translate into machine-code an assembly-language source program 
+(e.g., foo.axx), issue the command:
+
+C:\simcpu>assembler foo
+
+(if no file name is given on the command line, the program asks for one)
+
+If the program is syntactically correct, a foo.exx SimCPU-executable 
+file is created.
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+Example 1: sum3.exx
+It sums the values of a 3-elements array. Result is left in R10.
+
+
+C:\simcpu>simcpu sum3
+
+(NOTE: if no file name is given on the command line, the program asks for one)
+
+
+SIMCPU 2.0 starting...
+
+ENTERING COMMAND MODE: current program counter = 0005
+> help
+
+Available commands (can be abbreviated down to the first letter only): 
+
+   Set Trace_mode Instruction
+   Set Trace_mode Extended
+   Set Trace_mode Disable
+   Set Breakpoint <address (hex)> Enabled 
+   Set Breakpoint <address (hex)> Disabled 
+   Run Next 
+   Run Forever 
+   Load Input-buffer $<string, up to the end of line> 
+   Display Memory <address (hex)> <length (dec)> 
+   Display Cpu 
+   Display Input-buffer 
+   EXit 
+   Quit 
+   Help 
+   Control-C (to enter command line mode while simulation is running) 
+
+   SHORTCUTS: 
+   Next = Run Next 
+   Cpu = Display Cpu 
+
+> d c
+CPU status: PC = 0005   IR = 0000   SP = 0000
+CPU status: zero = 0   negative = 0   carry = 0   overflow = 0
+CPU status: R0  = 0000   R1  = 0000   R2  = 0000   R3  = 0000
+CPU status: R4  = 0000   R5  = 0000   R6  = 0000   R7  = 0000
+CPU status: R8  = 0000   R9  = 0000   R10 = 0000   R11 = 0000
+CPU status: R12 = 0000   R13 = 0000   R14 = 0000   R15 = 0000
+> d m 0 29
+MEM[0000]: 03 |  N:     word 3
+MEM[0001]: 00 |
+MEM[0002]: 05 |  DATA:  byte 5
+MEM[0003]: 09 |         byte 9
+MEM[0004]: 0C |         byte 0C
+MEM[0005]: 10 |  START: LDWA R1 N
+MEM[0006]: 20 |
+MEM[0007]: 00 |
+MEM[0008]: 00 |
+MEM[0009]: 20 |         LDWI R2 DATA
+MEM[000A]: 10 |
+MEM[000B]: 02 |
+MEM[000C]: 00 |
+MEM[000D]: A0 |         LDWI R10 0
+MEM[000E]: 10 |
+MEM[000F]: 00 |
+MEM[0010]: 00 |
+MEM[0011]: B2 |  LOOP:  LDBR R11 R2
+MEM[0012]: 31 |
+MEM[0013]: BA |         ADD R11 R10
+MEM[0014]: 40 |
+MEM[0015]: 20 |         INC R2
+MEM[0016]: 48 |
+MEM[0017]: 10 |         DEC R1
+MEM[0018]: 49 |
+MEM[0019]: F6 |         JMPNZ LOOP
+MEM[001A]: C3 |
+MEM[001B]: 00 |         HLT
+MEM[001C]: CF |
+> r f
+
+ENTERING COMMAND MODE: current program counter = 001D
+> d c
+CPU status: PC = 001D   IR = CF00   SP = 0000
+CPU status: zero = 1   negative = 0   carry = 0   overflow = 0
+CPU status: R0  = 0000   R1  = 0000   R2  = 0005   R3  = 0000
+CPU status: R4  = 0000   R5  = 0000   R6  = 0000   R7  = 0000
+CPU status: R8  = 0000   R9  = 0000   R10 = 001A   R11 = 000C
+CPU status: R12 = 0000   R13 = 0000   R14 = 0000   R15 = 0000
+> q
+
+(Control is returned to MS-DOS)
+
+
+NOTE: To trace the execution of every single instruction, use the command 
+"set trace_mode instruction" (abbreviation: "s t i") or 
+"set trace_mode extended" (abbreviation: "s t e")
+
+
+-------------------------------------------------------------------
+Example 2: echo.exx
+The input buffer is read (polling mode) and its contents is writte 
+in the output buffer.
+
+
+C:\simcpu>simcpu echo
+SIMCPU 2.0 starting...
+
+ENTERING COMMAND MODE: current program counter = 0000
+> l i $hello
+> d i 
+68  (ASCII 'h') 
+65  (ASCII 'e') 
+6C  (ASCII 'l') 
+6C  (ASCII 'l') 
+6F  (ASCII 'o') 
+0A  (ASCII '\n') 
+> r f
+OUTPUT: 68 (ASCII h)
+OUTPUT: 65 (ASCII e)
+OUTPUT: 6C (ASCII l)
+OUTPUT: 6C (ASCII l)
+OUTPUT: 6F (ASCII o)
+OUTPUT: 0A
+
+(NOTE: now the simulation is running the polling loop because the input 
+buffer is empty. Use CONTROL-C to activate the command mode)
+
+ENTERING COMMAND MODE: current program counter = 0004
+> l i $bye
+> r f
+OUTPUT: 62 (ASCII b)
+OUTPUT: 79 (ASCII y)
+OUTPUT: 65 (ASCII e)
+OUTPUT: 0A
+
+(NOTE: CONTROL-C again...)
+
+ENTERING COMMAND MODE: current program counter = 0000
+> q
+
+(Control is returned to MS-DOS)
+
+
+-------------------------------------------------------------------
+Example 3: halt.exx
+It fetches and executes only one instruction. 
+The examples show the "extended" and "instruction" trace modes.
+
+
+C:\simcpu>simcpu halt
+SIMCPU 2.0 starting...
+
+ENTERING COMMAND MODE: current program counter = 0000
+> s t e
+> r f
+
+TRACE: starting new instruction, program counter = 0000
+TRACE: CF00 read from MEM[0000]
+TRACE: instruction_register set from 0000 to CF00
+TRACE: program counter set from 0000 to 0002
+TRACE: CF00 read from instruction_register (opcode: HLT)
+TRACE: halt instruction
+
+ENTERING COMMAND MODE: current program counter = 0002
+> q
+
+(Control is returned to MS-DOS)
+
+
+C:\simcpu>simcpu halt
+SIMCPU 2.0 starting...
+
+ENTERING COMMAND MODE: current program counter = 0000
+> s t i
+> r f
+Exexuting instruction at address 0000:
+MEM[0000]: 00 |  start: HLT
+MEM[0001]: CF |
+
+ENTERING COMMAND MODE: current program counter = 0002
+> q
+
+(Control is returned to MS-DOS)

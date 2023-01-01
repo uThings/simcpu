@@ -1,0 +1,171 @@
+
+/*****************************************************************
+
+ Copyright 2001   PIER LUCA MONTESSORO
+
+ University of Udine
+ ITALY
+
+ montessoro@uniud.it
+ www.montessoro.it
+
+ This file is part of a freeware open source software package.
+ It can be freely used (as it is or modified) as long as this
+ copyright note is not removed.
+
+ SIMCPU: assembler and machine languages
+
+******************************************************************/
+
+NOTES
+
+- In the following, uppercase symbols mean numbers, lowercase
+  symbols mean registers. For example, 'A' could be 0x32F5,
+  'a' could be R12
+
+- 'r', 's', 'd', and 'a' represent the code (0 to 15) of the 
+  register to be used:
+  r = register (the value in the register will be read and modified)
+  s = source (read only)
+  d = destination (the value in the register will overwritten)
+  a = (the value in the register will be used as a memory address)
+
+- The ffffffff value represents a memory offset, 
+  positive (forward branches) or negative (in 2's complement,
+  for backword branches)
+
+- Most of the instructions of the data trasfer group work on memory data,
+  addresses or registers:
+  xxxI = data is stored in memory in the location immediately following
+         the instruction code
+  xxxA = the instrucion code in memory is followed by the data address
+  xxxR = two registers are used: one to sore the data, and another one
+         to store the memory address
+
+
+Data transfer group:
+____________________
+
+assembly  inst. name  machine code                  action
+
+LDWI d X  load word   00010000dddd0000 DATA(16)     d <- X
+LDWA d A  load word   00100000dddd0000 ADDR(16)     d <- mem[A]
+LDWR d a  load word   00110000ddddaaaa              d <- mem[a]
+LDBI d X  load byte   00010001dddd0000 DATA(8)      d <- X
+LDBA d A  load byte   00100001dddd0000 ADDR(16)     d <- mem[A]
+LDBR d a  load byte   00110001ddddaaaa              d <- mem[a]
+STWA s A  store word  00100010ssss0000 ADDR(16)     mem[A] <- s
+STWR s a  store word  00110010ssssaaaa              mem[a] <- s
+STBA s A  store byte  00100011ssss0000 ADDR(16)     mem[A] <- s
+STBR s a  store byte  00110011ssssaaaa              mem[a] <- s
+MV   s d  move        00000100ssssdddd              d <- s
+PUSH s    push        00001000ssss0000              push (s)
+POP  d    pop         00001001dddd0000              d <- pop ()
+SPRD d    read SP     00001101dddd0000              d <- SP
+SPWR s    write SP    00001110ssss0000              SP <- s
+
+
+
+Arithmetic-logic group:
+_______________________
+
+assembly inst. name   machine code        action (C operators)
+
+ADD s d  add          01000000ssssdddd    d <- d + s
+SUB s d  subtract     01000001ssssdddd    d <- d - s
+NOT r    bitwise NOT  01000010rrrr0000    r <- ~r
+AND s d  bitwise AND  01000011ssssdddd    d <- d & s
+OR  s d  bitwise OR   01000100ssssdddd    d <- d | s
+XOR s d  bitwise XOR  01000101ssssdddd    d <- d ^ s
+INC r    increment    01001000rrrr0000    r <- r + 1
+DEC r    decrement    01001001rrrr0000    r <- r + 1
+LSH r    left shift   01001010rrrr0000    r <- r << 1
+RSH r    right shift  01001011rrrr0000    r <- r >> 1
+
+
+Input/output group:
+___________________
+
+assembly inst. name  machine code                     action
+
+INW  d A input word  10000000dddd0000 IN_ADDR(16)     d <- read[A]
+INB  d A input byte  10000001dddd0000 IN_ADDR(16)     d <- read[A]
+OUTW s A out word    10000010ssss0000 OUT_ADDR(16)    out[A] <- s
+OUTB s A out byte    10000011ssss0000 OUT_ADDR(16)    out[A] <- s
+TSTI A   test input  1000010000000000 IN_ADDR(16)     if completed then Z <- 1 else Z <- 0
+TSTO A   test output 1000010100000000 OUT_ADDR(16)    if completed then Z <- 1 else Z <- 0
+
+
+
+Control group:
+______________
+
+assembly inst. name       machine code                action (C-like)
+
+BR    A  branch           1100000000000000 ADDR(16)   PC <- A
+JMP   F  jump             11000001FFFFFFFF            PC <- PC + F
+JMPZ  F  jump if zero     11000010FFFFFFFF            if (z == 1) PC <- PC + F
+JMPNZ F  jump if not zero 11000011FFFFFFFF            if (z == 0) PC <- PC + F
+JMPN  F  jump if negative 11000100FFFFFFFF            if (N == 1) PC <- PC + F
+JMPNN F  jump if not neg. 11000101FFFFFFFF            if (N == 0) PC <- PC + F
+JMPC  F  jump if carry    11000110FFFFFFFF            if (C == 1) PC <- PC + F
+JMPV  F  jump if overflow 11000111FFFFFFFF            if (V == 1) PC <- PC + F
+CALL  A  subroutine call  1100100000000000 ADDR(16)   push (PC); PC <- A
+RET      return from sub. 1100100100000000            PC <- pop()
+HLT      halt             1100111100000000            halt
+
+
+
+How do the instructions affect the flags?
+_________________________________________
+
+Legenda:
+   0 = the flag is reset
+   D = the value depends on the result of the operation
+   - = the flag is not affected by the operation
+
+                           Z N C V
+LDWI d X  load word        D D - -
+LDWA d A  load word        D D - -
+LDWR d a  load word        D D - -
+LDBI d X  load byte        D - - -
+LDBA d A  load byte        D - - -
+LDBR d a  load byte        D - - -
+STWA s A  store word       - - - -
+STWR s a  store word       - - - -
+STBA s A  store byte       - - - -
+STBR s a  store byte       - - - -
+MV   s d  move             D D - -
+PUSH  s   push             - - - -
+POP   d   pop              D D - -
+SPRD  d   read  SP         D D - -
+SPWR  s   write SP         - - - -
+ADD s d   add              D D D D
+SUB s d   subtract         D D D D
+NOT r     bitwise NOT      D D 0 0
+AND s d   bitwise AND      D D 0 0
+OR  s d   bitwise OR       D D 0 0
+XOR s d   bitwise XOR      D D 0 0
+INC r     increment        D D D D
+DEC r     decrement        D D D D
+LSH r     left shift       D D D 0
+RSH r     right shift      D D D 0
+INW  d A  input word       D D - -
+INB  d A  input byte       D D - -
+OUTW s A  out word         - - - -
+OUTB s A  out byte         - - - -
+TSTI A    test input       D - - -
+TSTO A    test output      D - - -
+BR   A    branch           - - - -
+JMP   f   jump             - - - -
+JMPZ  f   jump if zero     - - - -
+JMPNZ f   jump if not zero - - - -
+JMPN  f   jump if negative - - - -
+JMPNN f   jump if not neg. - - - -
+JMPC  f   jump if carry    - - - -
+JMPV  f   jump if overflow - - - -
+CALL  A   subroutine call  - - - -
+RET       return from sub. - - - -
+HLT       halt             - - - -
+
+

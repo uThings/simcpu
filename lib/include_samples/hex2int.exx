@@ -1,0 +1,188 @@
+009D
+00 | STACKADDR: word 0F000           ; beginning of stack area
+F0 | 
+00 | INBUFADDR: word 0E000           ; beginning of input buffer area
+E0 | 
+00 | GETS:      LDBI R0 0A           ; void gets (char *str)
+11 | 
+0A | 
+20 | L_GETS:    INB R2 0001
+81 | 
+01 | 
+00 | 
+00 |            TSTI 0001     
+84 | 
+01 | 
+00 | 
+F6 |            JMPNZ L_GETS
+C3 | 
+21 |            STBR R2 R1    
+33 | 
+02 |            SUB R0 R2
+41 | 
+04 |            JMPZ END_GETS   
+C2 | 
+10 |            INC R1
+48 | 
+EC |            JMP L_GETS
+C1 | 
+20 | END_GETS:  LDBI R2 0
+11 | 
+00 | 
+21 |            STBR R2 R1    
+33 | 
+00 |            RET
+C9 | 
+F0 | HEX2INT:   LDBI R15 30       ; '0'
+11 | 
+30 | 
+E0 |            LDBI R14 41       ; 'A'
+11 | 
+41 | 
+D0 |            LDBI R13 0A       ; offset of values represented by the digits A-F
+11 | 
+0A | 
+00 |            LDWI R0 0
+10 | 
+00 | 
+00 | 
+21 | L_H2I:     LDBR R2 R1
+31 | 
+1C |            JMPZ END_H2I
+C2 | 
+10 |            INC R1
+48 | 
+23 |            MV R2 R3          ; save the digit value
+04 | 
+E2 |            SUB R14 R2        ; subtract the 'A' ASCII code value
+41 | 
+04 |            JMPN D_H2I        ; if negative, it'a decimal digit (0-9)
+C4 | 
+D2 |            ADD R13 R2        ; add the offset 
+40 | 
+04 |            JMP BASE_H2I
+C1 | 
+32 | D_H2I:     MV R3 R2          ; restore R2
+04 | 
+F2 |            SUB R15 R2        ; subtract the '0' ASCII code value
+41 | 
+00 | BASE_H2I:  LSH R0            ; myltiply R0 by 16
+4A | 
+00 |            LSH R0            ; ...
+4A | 
+00 |            LSH R0            ; ...
+4A | 
+00 |            LSH R0            ; ...
+4A | 
+20 |            ADD R2 R0
+40 | 
+E0 |            JMP L_H2I
+C1 | 
+00 | END_H2I:   RET
+C9 | 
+00 | DIV:       LDWI R0 0            ; int div (int a, int b)
+10 | 
+00 | 
+00 | 
+1F |            MV R1 R15
+04 | 
+F3 | L_DIV:     MV R15 R3
+04 | 
+23 |            SUB R2 R3
+41 | 
+06 |            JMPN END_DIV
+C4 | 
+2F |            SUB R2 R15
+41 | 
+00 |            INC R0
+48 | 
+F4 |            JMP L_DIV
+C1 | 
+00 | END_DIV:   RET
+C9 | 
+A0 | WRITENUM:  LDWI R10 1           ; void writenum (int n)
+10 | 
+01 | 
+00 | 
+B0 | L1_WRNUM:  LDWI R11 09
+10 | 
+09 | 
+00 | 
+1B |            SUB R1 R11
+41 | 
+14 |            JMPNN L2_WRNUM
+C5 | 
+20 |            LDWI R2 0A
+10 | 
+0A | 
+00 | 
+A0 |            PUSH R10
+08 | 
+00 |            CALL DIV
+C8 | 
+51 | 
+00 | 
+A0 |            POP R10
+09 | 
+01 |            MV R0 R1
+04 | 
+F0 |            PUSH R15
+08 | 
+A0 |            INC R10
+48 | 
+E4 |            JMP L1_WRNUM
+C1 | 
+B0 | L2_WRNUM:  LDWI R11 30
+10 | 
+30 | 
+00 | 
+1B |            ADD R1 R11
+40 | 
+B0 | L3_WRNUM:  OUTB R11 0000
+83 | 
+00 | 
+00 | 
+00 |            TSTO 0000
+85 | 
+00 | 
+00 | 
+A0 |            DEC R10
+49 | 
+04 |            JMPZ E_WRNUM
+C2 | 
+10 |            POP R1               ; was R15, stored in the stack
+09 | 
+EA |            JMP L2_WRNUM
+C1 | 
+00 | E_WRNUM:   RET
+C9 | 
+F0 | START:     LDWA R15 STACKADDR   ; stack initialization
+20 | 
+00 | 
+00 | 
+F0 |            SPWR R15             ; NOTE: every function receives input
+0E | 
+10 |            LDWA R1 INBUFADDR
+20 | 
+02 | 
+00 | 
+10 |            PUSH R1
+08 | 
+00 |            CALL GETS
+C8 | 
+04 | 
+00 | 
+10 |            POP R1
+09 | 
+00 |            CALL HEX2INT 
+C8 | 
+22 | 
+00 | 
+01 |            MV R0 R1
+04 | 
+00 |            CALL WRITENUM
+C8 | 
+65 | 
+00 | 
+00 |            HLT
+CF | 

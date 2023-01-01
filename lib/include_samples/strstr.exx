@@ -1,0 +1,199 @@
+00A2
+00 | STACKADDR: word 0F000           ; beginning of stack area
+F0 | 
+00 | STR1:      word 0E000
+E0 | 
+00 | STR2:      word 0E100
+E1 | 
+00 | GETS:      LDBI R0 0A           ; void gets (char *str)
+11 | 
+0A | 
+20 | L_GETS:    INB R2 0001
+81 | 
+01 | 
+00 | 
+00 |            TSTI 0001     
+84 | 
+01 | 
+00 | 
+F6 |            JMPNZ L_GETS
+C3 | 
+21 |            STBR R2 R1    
+33 | 
+02 |            SUB R0 R2
+41 | 
+04 |            JMPZ END_GETS   
+C2 | 
+10 |            INC R1
+48 | 
+EC |            JMP L_GETS
+C1 | 
+20 | END_GETS:  LDBI R2 0
+11 | 
+00 | 
+21 |            STBR R2 R1    
+33 | 
+00 |            RET
+C9 | 
+1B | STRCMP:    MV R1 R11   ; save R1 in R11
+04 | 
+2C |            MV R2 R12   ; save R2 in R12
+04 | 
+3B | L_STRCMP:  LDBR R3 R11
+31 | 
+4C |            LDBR R4 R12
+31 | 
+30 |            MV R3 R0
+04 | 
+40 |            SUB R4 R0
+41 | 
+0E |            JMPNZ E_STRCMP
+C3 | 
+35 |            MV R3 R5    ; end of string?
+04 | 
+0A |            JMPZ E_STRCMP
+C2 | 
+45 |            MV R4 R5
+04 | 
+06 |            JMPZ E_STRCMP
+C2 | 
+B0 |            INC R11
+48 | 
+C0 |            INC R12
+48 | 
+E8 |            JMP L_STRCMP
+C1 | 
+00 | E_STRCMP:  RET
+C9 | 
+00 | STRLEN:    LDWI R0 0            ; int strlen (char *str)
+10 | 
+00 | 
+00 | 
+21 | L_STRLEN:  LDBR R2 R1
+31 | 
+06 |            JMPZ E_STRLEN
+C2 | 
+10 |            INC R1
+48 | 
+00 |            INC R0
+48 | 
+F6 |            JMP L_STRLEN
+C1 | 
+00 | E_STRLEN:  RET
+C9 | 
+1B | STRNCMP:   MV R1 R11   ; save R1 in R11
+04 | 
+2C |            MV R2 R12   ; save R2 in R12
+04 | 
+00 |            XOR R0 R0
+45 | 
+3F |            MV R3 R15
+04 | 
+1C |            JMPZ E_STRNCMP
+C2 | 
+DB | L_STRNCMP: LDBR R13 R11
+31 | 
+EC |            LDBR R14 R12
+31 | 
+D0 |            MV R13 R0
+04 | 
+E0 |            SUB R14 R0
+41 | 
+12 |            JMPNZ E_STRNCMP
+C3 | 
+D5 |            MV R13 R5    ; end of string?
+04 | 
+0E |            JMPZ E_STRNCMP
+C2 | 
+E5 |            MV R14 R5
+04 | 
+0A |            JMPZ E_STRNCMP
+C2 | 
+30 |            DEC R3
+49 | 
+06 |            JMPZ E_STRNCMP
+C2 | 
+B0 |            INC R11
+48 | 
+C0 |            INC R12
+48 | 
+E4 |            JMP L_STRNCMP
+C1 | 
+00 | E_STRNCMP: RET
+C9 | 
+10 | STRSTR:        PUSH R1
+08 | 
+20 |                PUSH R2
+08 | 
+21 |                MV R2 R1
+04 | 
+00 |                CALL STRLEN
+C8 | 
+42 | 
+00 | 
+03 |                MV R0 R3
+04 | 
+20 |                POP R2
+09 | 
+10 |                POP R1
+09 | 
+00 | L_STRSTR:      CALL STRNCMP
+C8 | 
+52 | 
+00 | 
+0A |                MV R0 R10
+04 | 
+0C |                JMPZ FOUND_STRSTR
+C2 | 
+10 |                INC R1
+48 | 
+C1 |                LDBR R12 R1
+31 | 
+02 |                JMPZ NFOUND_STRSTR
+C2 | 
+F0 |                JMP L_STRSTR
+C1 | 
+00 | NFOUND_STRSTR: XOR R0 R0
+45 | 
+00 |                RET
+C9 | 
+10 | FOUND_STRSTR:  MV R1 R0
+04 | 
+00 |                RET
+C9 | 
+F0 | START:     LDWA R15 STACKADDR   ; stack initialization
+20 | 
+00 | 
+00 | 
+F0 |            SPWR R15             ; NOTE: every function receives input
+0E | 
+10 |            LDWA R1 STR1
+20 | 
+02 | 
+00 | 
+00 |            CALL GETS
+C8 | 
+06 | 
+00 | 
+10 |            LDWA R1 STR2
+20 | 
+04 | 
+00 | 
+00 |            CALL GETS
+C8 | 
+06 | 
+00 | 
+10 |            LDWA R1 STR1
+20 | 
+02 | 
+00 | 
+20 |            LDWA R2 STR2
+20 | 
+04 | 
+00 | 
+00 |            CALL STRSTR
+C8 | 
+7A | 
+00 | 
+00 |            HLT
+CF | 

@@ -1,0 +1,13 @@
+0004
+00 | STACKADDR: word 0F000           ; beginning of stack area
+F0 | 
+00 | INBUFADDR: word 0E000           ; beginning of input buffer area
+E0 | 
+F0 | START:     LDWA R15 STACKADDR   ; stack initialization
+20 | 
+00 | 
+00 | 
+F0 |            SPWR R15             ; NOTE: every function receives input
+0E | 
+00 |            HLT
+CF | 

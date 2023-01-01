@@ -1,0 +1,69 @@
+0000
+A0 | START:    LDWI R10 0F000
+10 | 
+00 | 
+F0 | 
+A0 |           SPWR R10
+0E | 
+10 |           LDWI R1 0A           ;    int R1 = 10;
+10 | 
+0A | 
+00 | 
+00 |           CALL FIBO            ;    int R0 = fibonacci (R1);
+C8 | 
+10 | 
+00 | 
+00 |           HLT                  ; }
+CF | 
+12 | FIBO:     MV R1 R2
+04 | 
+04 |           JMPNZ CONT_1         ;    if (R1 == 0)
+C3 | 
+00 |           XOR R0 R0            ;       return 0;
+45 | 
+00 |           RET
+C9 | 
+20 | CONT_1:   LDWI R2 1
+10 | 
+01 | 
+00 | 
+12 |           SUB R1 R2
+41 | 
+06 |           JMPNZ CONT_2         ;    if (R1 == 1)
+C3 | 
+00 |           LDWI R0 1            ;       return 1;
+10 | 
+01 | 
+00 | 
+00 |           RET
+C9 | 
+10 | CONT_2:   DEC R1
+49 | 
+10 |           PUSH R1
+08 | 
+00 |           CALL FIBO            ;    /* calls fibonacci (R1-1); */
+C8 | 
+10 | 
+00 | 
+10 |           POP R1
+09 | 
+02 |           MV R0 R2
+04 | 
+10 |           DEC R1
+49 | 
+10 |           PUSH R1
+08 | 
+20 |           PUSH R2
+08 | 
+00 |           CALL FIBO            ;    /* calls fibonacci (R1-2); */
+C8 | 
+10 | 
+00 | 
+20 |           POP R2
+09 | 
+10 |           POP R1
+09 | 
+20 |           ADD R2 R0
+40 | 
+00 |           RET                  ;    return fibonacci (R1-1) + fibonacci (R1-2);
+C9 | 

@@ -1,0 +1,18 @@
+
+/*****************************************************************
+
+ Copyright 2004   PIER LUCA MONTESSORO
+
+ University of Udine
+ ITALY
+
+ montessoro@uniud.it
+ www.montessoro.it
+
+ This file is part of a freeware open source software package.
+ It can be freely used (as it is or modified) as long as this
+ copyright note is not removed.
+
+******************************************************************/
+
+Please see documentation in "doc" directory.

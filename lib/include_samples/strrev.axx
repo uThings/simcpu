@@ -1,0 +1,102 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; STRREV function test program
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+STR:       word 0E800
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+
+; GETS function: reads a line and stores the string
+;                at memory address passed in R1
+
+GETS:      LDBI R0 0A           ; void gets (char *str)
+L_GETS:    INB R2 0001
+           TSTI 0001     
+           JMPNZ L_GETS
+           STBR R2 R1    
+           SUB R0 R2
+           JMPZ END_GETS   
+           INC R1
+           JMP L_GETS
+END_GETS:  LDBI R2 0
+           STBR R2 R1    
+           RET
+
+; PUTS function: sends to the output device the string 
+;                whose address is passed in R1
+
+PUTS:      LDBR R2 R1           ; void puts (char *str)
+           JMPZ END_PUTS
+L_PUTS:    OUTB R2 0000
+           TSTO 0000     
+           JMPNZ L_PUTS
+           INC R1
+           JMP PUTS
+END_PUTS:  LDBI R2 0A
+LEND_PUTS: OUTB R2 0000
+           TSTO 0000     
+           JMPNZ LEND_PUTS
+           RET
+
+; STRREV function: string reverse (string address in R1)
+
+STRREV:    MV R1 R10            ; make a copy of the string address
+           LDWI R0 0
+           PUSH R0              ; place a terminator in the stack
+SREV_L1:   LDBR R2 R10
+           JMPZ SREV_L2
+           PUSH R2
+           INC R10
+           JMP SREV_L1
+SREV_L2:   MV R1 R10            ; restore the pointer
+SREV_L3:   POP R2
+           JMPZ SREV_END
+           STBR R2 R10
+           INC R10
+           JMP SREV_L3
+SREV_END:   RET
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           LDWA R1 STR
+           PUSH R1
+           CALL GETS
+           POP R1
+           PUSH R1
+           CALL STRREV
+           POP R1
+           PUSH R1
+           POP R1
+           CALL PUTS
+
+           ; the end
+           HLT

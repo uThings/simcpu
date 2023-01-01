@@ -1,0 +1,89 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+;
+; This is a simplified version of the recursive_fibonacci program,
+; without any I/O function. Variables are stored in registers and
+; not in central memory.
+;
+; The program recursively computes the n-th element of the 
+; Fibonacci succession. Value n is passed in R1 and Fn is 
+; returned in R0.
+;
+;
+; Let's start from the C language implementation:
+;
+; int main()
+; {
+;    int R1 = 10;
+;    int R0 = fibonacci (R1);
+; }
+;
+; int fibonacci (int R1)
+; {
+;    if (R1 == 0)
+;       return 0;
+;   
+;    if (R1 == 1)     
+;       return 1;
+;   
+;    return fibonacci (R1-1) + fibonacci (R1-2);
+; }
+;
+;
+;
+; In assembly language:
+
+                               ; int main()
+                               ; {
+START:    LDWI R10 0F000
+          SPWR R10
+          LDWI R1 0A           ;    int R1 = 10;
+          CALL FIBO            ;    int R0 = fibonacci (R1);
+          HLT                  ; }
+
+
+                               ; int fibonacci (int R1)
+                               ; {
+FIBO:     MV R1 R2
+          JMPNZ CONT_1         ;    if (R1 == 0)
+          XOR R0 R0            ;       return 0;
+          RET
+
+CONT_1:   LDWI R2 1
+          SUB R1 R2
+          JMPNZ CONT_2         ;    if (R1 == 1)
+          LDWI R0 1            ;       return 1;
+          RET
+
+CONT_2:   DEC R1
+          PUSH R1
+          CALL FIBO            ;    /* calls fibonacci (R1-1); */
+          POP R1
+          MV R0 R2
+          DEC R1
+          PUSH R1
+          PUSH R2
+          CALL FIBO            ;    /* calls fibonacci (R1-2); */
+          POP R2
+          POP R1
+          ADD R2 R0
+          RET                  ;    return fibonacci (R1-1) + fibonacci (R1-2);
+                               ; }
+

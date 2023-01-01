@@ -1,0 +1,30 @@
+0005
+03 | N:     word 3
+00 | 
+05 | DATA:  byte 5
+09 |        byte 9
+0C |        byte 0C
+10 | START: LDWA R1 N
+20 | 
+00 | 
+00 | 
+20 |        LDWI R2 DATA
+10 | 
+02 | 
+00 | 
+A0 |        LDWI R10 0
+10 | 
+00 | 
+00 | 
+B2 | LOOP:  LDBR R11 R2
+31 | 
+BA |        ADD R11 R10
+40 | 
+20 |        INC R2
+48 | 
+10 |        DEC R1
+49 | 
+F6 |        JMPNZ LOOP
+C3 | 
+00 |        HLT
+CF | 

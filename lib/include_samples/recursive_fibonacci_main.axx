@@ -1,0 +1,102 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assemply language examples
+;
+;******************************************************************
+
+; Recursively computes Fn (Fibonacci succession, n read from input device):
+;
+; int main()
+; {
+;    int R1 = 10;
+;    int R0 = fibonacci (R1);
+; }
+;
+; int fibonacci (int R1)
+; {
+;    if (R1 == 0)
+;       return 0;
+;   
+;    if (R1 == 1)     
+;       return 1;
+;   
+;    return fibonacci (R1-1) + fibonacci (R1-2);
+; }
+;
+
+STACKADDR: word 0F000           ; beginning of stack area
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+#include "readnum.ixx"
+#include "writenum.ixx"
+#include "puts.ixx"
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           ; read n
+           LDWA R1 INBUFADDR
+           PUSH R1
+           CALL READNUM
+           POP R1
+
+           MV R0 R1
+           CALL FIBONACCI
+
+           MV R0 R1
+           CALL WRITENUM
+
+           ; the end
+           HLT
+
+;****************************************************************************
+
+                                ; int fibonacci (int R1)
+                                ; {
+FIBONACCI: MV R1 R2
+           JMPNZ CONT_1         ;    if (R1 == 0)
+           XOR R0 R0            ;       return 0;
+           RET
+
+CONT_1:    LDWI R2 1
+           SUB R1 R2
+           JMPNZ CONT_2         ;    if (R1 == 1)
+           LDWI R0 1            ;       return 1;
+           RET
+
+CONT_2:    DEC R1
+           PUSH R1
+           CALL FIBONACCI       ;    /* chiama fibonacci (R1-1); */
+           POP R1
+           MV R0 R2
+           DEC R1
+           PUSH R1
+           PUSH R2
+           CALL FIBONACCI       ;    /* chiama fibonacci (R1-2); */
+           POP R2
+           POP R1
+           ADD R2 R0
+           RET                  ;    return fibonacci (R1-1) + fibonacci (R1-2);
+                                ; }

@@ -1,0 +1,164 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; STRCMP, STREXCH, STRCAT functions test program
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+STR1:      word 0E000
+STR2:      word 0E100
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+
+; GETS function: reads a line and stores the string
+;                at memory address passed in R1
+
+GETS:      LDBI R0 0A           ; void gets (char *str)
+L_GETS:    INB R2 0001
+           TSTI 0001     
+           JMPNZ L_GETS
+           STBR R2 R1    
+           SUB R0 R2
+           JMPZ END_GETS   
+           INC R1
+           JMP L_GETS
+END_GETS:  LDBI R2 0
+           STBR R2 R1    
+           RET
+
+; STRCMP function: compares the strings addressed by R1 and R2
+;                  (returns 0 if equal)
+
+STRCMP:    MV R1 R11   ; save R1 in R11
+           MV R2 R12   ; save R2 in R12
+L_STRCMP:  LDBR R3 R11
+           LDBR R4 R12
+           MV R3 R0
+           SUB R4 R0
+           JMPNZ E_STRCMP
+           MV R3 R5    ; end of string?
+           JMPZ E_STRCMP
+           MV R4 R5
+           JMPZ E_STRCMP
+           INC R11
+           INC R12
+           JMP L_STRCMP
+E_STRCMP:  RET
+
+
+
+
+; STRLEN function: returns in R0 the lenght of the string 
+;                  whose address is passed i R1
+
+STRLEN:    LDWI R0 0            ; int strlen (char *str)
+L_STRLEN:  LDBR R2 R1
+           JMPZ E_STRLEN
+           INC R1
+           INC R0
+           JMP L_STRLEN
+E_STRLEN:  RET
+
+; STRNCMP function: compares up to R3 characters the strings addressed by
+;                   R1 and R2 (returns 0 if equal)
+
+
+STRNCMP:   MV R1 R11   ; save R1 in R11
+           MV R2 R12   ; save R2 in R12
+           XOR R0 R0
+           MV R3 R15
+           JMPZ E_STRNCMP
+L_STRNCMP: LDBR R13 R11
+           LDBR R14 R12
+           MV R13 R0
+           SUB R14 R0
+           JMPNZ E_STRNCMP
+           MV R13 R5    ; end of string?
+           JMPZ E_STRNCMP
+           MV R14 R5
+           JMPZ E_STRNCMP
+           DEC R3
+           JMPZ E_STRNCMP
+           INC R11
+           INC R12
+           JMP L_STRNCMP
+E_STRNCMP: RET
+
+
+
+
+; STRSTR function:  char *strstr(const char *R1, const char *R2);
+;                   Locates  the  first  occurence  in  the  string pointed
+;                   to by R1 of the sequence of characters in the string
+;                   pointed to by R2 (excluding  the terminating null
+;                   character).
+;                   Returns  a  pointer to the located string segment, or
+;                   a null pointer if the string R2 is not found.
+
+
+STRSTR:        PUSH R1
+               PUSH R2
+               MV R2 R1
+               CALL STRLEN
+               MV R0 R3
+               POP R2
+               POP R1
+L_STRSTR:      CALL STRNCMP
+               MV R0 R10
+               JMPZ FOUND_STRSTR
+               INC R1
+               LDBR R12 R1
+               JMPZ NFOUND_STRSTR
+               JMP L_STRSTR
+
+NFOUND_STRSTR: XOR R0 R0
+               RET
+
+FOUND_STRSTR:  MV R1 R0
+               RET
+
+
+
+
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           LDWA R1 STR1
+           CALL GETS
+
+           LDWA R1 STR2
+           CALL GETS
+
+           ; test strstr
+           LDWA R1 STR1
+           LDWA R2 STR2
+           CALL STRSTR
+
+           ; the end
+           HLT

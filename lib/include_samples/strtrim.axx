@@ -1,0 +1,170 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; STRTRIM function test program
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+STR:       word 0E800
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+
+; GETS function: reads a line and stores the string
+;                at memory address passed in R1
+
+GETS:      LDBI R0 0A           ; void gets (char *str)
+L_GETS:    INB R2 0001
+           TSTI 0001     
+           JMPNZ L_GETS
+           STBR R2 R1    
+           SUB R0 R2
+           JMPZ END_GETS   
+           INC R1
+           JMP L_GETS
+END_GETS:  LDBI R2 0
+           STBR R2 R1    
+           RET
+
+; PUTS function: sends to the output device the string 
+;                whose address is passed in R1
+
+PUTS:      LDBR R2 R1           ; void puts (char *str)
+           JMPZ END_PUTS
+L_PUTS:    OUTB R2 0000
+           TSTO 0000     
+           JMPNZ L_PUTS
+           INC R1
+           JMP PUTS
+END_PUTS:  LDBI R2 0A
+LEND_PUTS: OUTB R2 0000
+           TSTO 0000     
+           JMPNZ LEND_PUTS
+           RET
+
+; multiple include of file gets.ixx suppressed
+
+; multiple include of file puts.ixx suppressed
+
+; OVERFLOW function: writes the "overflow" error message 
+;                    and halts the program
+
+OVFLMSG:   byte 4F              ; 'Overflow' (error message)
+           byte 76
+           byte 65
+           byte 72
+           byte 66
+           byte 6C
+           byte 6F
+           byte 77
+           byte 00
+
+OVERFLOW:  LDWI R1 OVFLMSG
+           CALL PUTS
+           HLT
+
+; ATOI function: returns in R0 the numerical value represented by
+;                the string whose address is passed in R1
+
+ATOI:      LDBI R15 30          ; '0'
+           LDBI R14 2D          ; '-'
+           LDWI R0 0
+L_ATOI:    LDBR R2 R1
+           SUB R2 R14           ; negative?
+           JMPNZ LABS_ATOI
+           INC R1
+LABS_ATOI: LDBR R2 R1
+           JMPZ SIGN_ATOI
+           SUB R15 R2
+           MV R0 R4
+           LSH R0               ; R0 * 10 = R0 + R0 + R0 << 3
+           JMPC ATOI_OVFL
+           LSH R0
+           JMPC ATOI_OVFL
+           LSH R0
+           JMPC ATOI_OVFL
+           ADD R4 R0
+           JMPC ATOI_OVFL
+           ADD R4 R0
+           JMPC ATOI_OVFL
+           ADD R2 R0
+           JMPC ATOI_OVFL
+           INC R1
+           JMP LABS_ATOI
+SIGN_ATOI: MV R14 R13
+           JMPNZ END_ATOI
+           SUB R0 R14           ; R14 here contains zero
+           MV R14 R0 
+END_ATOI:  RET
+ATOI_OVFL: CALL OVERFLOW
+           HLT
+
+INBUFADDR: word 0E000           ; beginning of input buffer area
+
+; READNUM function: reads an integer from the input device
+;                   and returns its value in R0
+
+READNUM:   LDWA R1 INBUFADDR    ; int readnum (void)
+           PUSH R1              
+           CALL GETS            
+           POP R1
+           CALL ATOI
+           RET
+
+; STRTRIM function: shorten the string whose address is passed in R1
+;                   to the lenght passed in R2, if longer
+
+STRTRIM:   LDBR R10 R1           ; int strtrim (char *str, int len)
+           JMPZ E_STRTRIM
+           MV R2 R3
+           JMPNZ CONTINUE
+           LDBI R10 0
+           STBR R10 R1
+           JMP E_STRTRIM
+CONTINUE:  INC R1
+           DEC R2
+           JMP STRTRIM
+E_STRTRIM: RET
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           LDWA R1 STR
+           CALL GETS
+
+           CALL READNUM
+
+           MV R0 R2
+           LDWA R1 STR
+           
+           CALL STRTRIM
+           
+           LDWA R1 STR
+           CALL PUTS
+
+           ; the end
+           HLT

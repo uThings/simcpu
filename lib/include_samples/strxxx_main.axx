@@ -1,0 +1,79 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; STRCMP, STREXCH, STRCAT functions test program
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+STR1:      word 0E000
+STR2:      word 0E100
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+#include "gets.ixx"
+#include "puts.ixx"
+#include "strcat.ixx"
+#include "strexch.ixx"
+#include "strcmp.ixx"
+#include "writenum.ixx"
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           LDWA R1 STR1
+           CALL GETS
+
+           LDWA R1 STR2
+           CALL GETS
+
+           ; test strcmp
+           LDWA R1 STR1
+           LDWA R2 STR2
+           CALL STRCMP
+           MV R0 R1
+           CALL WRITENUM
+
+           ; test strexch
+           LDWA R1 STR1
+           LDWA R2 STR2
+           CALL STREXCH
+           LDWA R1 STR1
+           CALL PUTS
+           LDWA R1 STR2
+           CALL PUTS
+
+           ; test strcat
+           LDWA R1 STR1
+           LDWA R2 STR2
+           CALL STRCAT
+           LDWA R1 STR1
+           CALL PUTS
+           LDWA R1 STR2
+           CALL PUTS
+
+           ; the end
+           HLT

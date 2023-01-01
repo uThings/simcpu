@@ -1,0 +1,36 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; add the elements of vector DATA (length N); result in R10
+
+N:     word 3
+DATA:  byte 5
+       byte 9
+       byte 0C
+
+START: LDWA R1 N
+       LDWI R2 DATA
+       LDWI R10 0
+
+LOOP:  LDBR R11 R2
+       ADD R11 R10
+       INC R2
+       DEC R1
+       JMPNZ LOOP
+       HLT

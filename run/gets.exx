@@ -1,0 +1,39 @@
+0002
+00 | D_ADDR:  word 0100       ; indirizzo di memoria dove iniziare
+01 | 
+00 | START:   LDWA R0 D_ADDR  ; carica l’indirizzo (0100) in R0
+20 | 
+00 | 
+00 | 
+20 |          LDBI R2 0A      ; carica il codice ASCII di CR in R2
+11 | 
+0A | 
+10 | LOOP:    INB R1 0001     ; legge un carattere da tastiera
+81 | 
+01 | 
+00 | 
+00 |          TSTI 0001       ; la lettura e` stata eseguita?
+84 | 
+01 | 
+00 | 
+F6 |          JMPNZ LOOP      ; no: ripeti l’istruzione di input
+C3 | 
+13 |          MV R1 R3        ; salva in R3 il carattere letto
+04 | 
+21 |          SUB R2 R1       ; confronta con il codice ASCII di CR
+41 | 
+06 |          JMPZ END        ; se Z=1 fine della sequenza di input
+C2 | 
+30 |          STBR R3 R0      ; salva il carattere letto
+33 | 
+00 |          INC R0          ; incrementa il puntatore
+48 | 
+EA |          JMP LOOP        ; passa al carattere successivo
+C1 | 
+30 | END:     LDBI R3 0       ; carica il valore 0 in R3
+11 | 
+00 | 
+30 |          STBR R3 R0      ; scrive 0 al termine della sequenza
+33 | 
+00 |          HLT
+CF | 

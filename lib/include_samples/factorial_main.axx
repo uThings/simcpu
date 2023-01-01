@@ -1,0 +1,67 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; recursive FACTORIAL function
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+#include "readnum.ixx"
+#include "writenum.ixx"
+#include "mul.ixx"
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           ; read the number
+           CALL READNUM
+
+           MV R0 R1
+           CALL FACTORIAL
+
+           ; write the factorial
+           MV R0 R1
+           CALL WRITENUM
+
+           ; the end
+           HLT
+
+;****************************************************************************
+
+FACTORIAL: MV R1 R2             ; int factorial (int n)
+           JMPZ E_FACT
+           PUSH R1
+           DEC R1
+           CALL FACTORIAL
+           POP R1
+           MV R0 R2
+           CALL MUL
+           RET
+E_FACT:    LDWI R0 1
+           RET

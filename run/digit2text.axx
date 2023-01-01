@@ -1,0 +1,144 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+;
+; digit2text: reads from input device a digit
+;             (ASCII character '0' <= ch <= '9')
+;             and sends to the output device it vaule in text format,
+;             e. g., '1' -> 'uno'
+;
+
+STACKADDR: word 0F000           ; beginning of stack area
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+
+; PUTS function: sends to the output device the string 
+;                whose address is passed in R1
+
+PUTS:      LDBR R2 R1           ; void puts (char *str)
+           JMPZ END_PUTS
+L_PUTS:    OUTB R2 0000
+           TSTO 0000     
+           JMPNZ L_PUTS
+           INC R1
+           JMP PUTS
+END_PUTS:  LDBI R2 0A
+LEND_PUTS: OUTB R2 0000
+           TSTO 0000     
+           JMPNZ LEND_PUTS
+           RET
+
+;****************************************************************************
+
+; CONSTANT STRINGS
+
+zero:    byte 7A    ; memory offset = 00
+         byte 65
+         byte 72
+         byte 6F
+         byte 0
+uno:     byte 75    ; 05
+         byte 6E
+         byte 6F
+         byte 0
+due:     byte 64    ; 09
+         byte 75
+         byte 65
+         byte 0
+tre:     byte 74    ; 0D
+         byte 72
+         byte 65
+         byte 0
+quattro: byte 71    ; 11
+         byte 75
+         byte 61
+         byte 74
+         byte 74
+         byte 72
+         byte 6F
+         byte 0
+cinque:  byte 63    ; 19
+         byte 69
+         byte 6E
+         byte 71
+         byte 75
+         byte 65
+         byte 0
+sei:     byte 73    ; 20
+         byte 65
+         byte 69
+         byte 0
+sette:   byte 73    ; 24
+         byte 65
+         byte 74
+         byte 74
+         byte 65
+         byte 0
+otto:    byte 6F    ; 2A
+         byte 74
+         byte 74
+         byte 6F
+         byte 0
+nove:    byte 6E    ; 2F
+         byte 6F
+         byte 76
+         byte 65
+         byte 0
+
+
+; CONSTANT STRING ADDRESSES TABLE
+
+ind_str:  word zero
+          word uno
+          word due
+          word tre
+          word quattro
+          word cinque
+          word sei
+          word sette
+          word otto
+          word nove
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+start:       LDWA R15 STACKADDR
+             SPWR R15
+polling:     INB R1 0001
+             TSTI 0001
+             JMPNZ polling
+             PUSH R1
+             CALL digit2text
+             POP R1  ;  for future extensions
+             HLT
+
+digit2text:  LDBI R15 30
+             SUB R15 R1      ; now in R1 the numerical value is stored
+             LSH R1          ; R1 = R1 * 2
+             LDWI R2 ind_str
+             ADD R2 R1
+             LDWR R1 R1      ; or: LDWR R10 R1  +  MV R10 R1
+             CALL PUTS
+             RET
+
+

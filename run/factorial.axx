@@ -1,0 +1,216 @@
+
+;*****************************************************************
+;
+; Copyright 2002   PIER LUCA MONTESSORO
+;
+; University of Udine
+; ITALY
+;
+; montessoro@uniud.it
+; www.montessoro.it
+;
+; This file is part of a freeware open source software package.
+; It can be freely used (as it is or modified) as long as this
+; copyright note is not removed.
+;
+; SIMCPU: assembly language examples
+;
+;******************************************************************
+
+; recursive FACTORIAL function
+
+
+STACKADDR: word 0F000           ; beginning of stack area
+
+;****************************************************************************
+
+; LIBRARY FUNCTIONS
+
+
+; GETS function: reads a line and stores the string
+;                at memory address passed in R1
+
+GETS:      LDBI R0 0A           ; void gets (char *str)
+L_GETS:    INB R2 0001
+           TSTI 0001     
+           JMPNZ L_GETS
+           STBR R2 R1    
+           SUB R0 R2
+           JMPZ END_GETS   
+           INC R1
+           JMP L_GETS
+END_GETS:  LDBI R2 0
+           STBR R2 R1    
+           RET
+
+; PUTS function: sends to the output device the string 
+;                whose address is passed in R1
+
+PUTS:      LDBR R2 R1           ; void puts (char *str)
+           JMPZ END_PUTS
+L_PUTS:    OUTB R2 0000
+           TSTO 0000     
+           JMPNZ L_PUTS
+           INC R1
+           JMP PUTS
+END_PUTS:  LDBI R2 0A
+LEND_PUTS: OUTB R2 0000
+           TSTO 0000     
+           JMPNZ LEND_PUTS
+           RET
+
+; OVERFLOW function: writes the "overflow" error message 
+;                    and halts the program
+
+OVFLMSG:   byte 4F              ; 'Overflow' (error message)
+           byte 76
+           byte 65
+           byte 72
+           byte 66
+           byte 6C
+           byte 6F
+           byte 77
+           byte 00
+
+OVERFLOW:  LDWI R1 OVFLMSG
+           CALL PUTS
+           HLT
+
+; ATOI function: returns in R0 the numerical value represented by
+;                the string whose address is passed in R1
+
+ATOI:      LDBI R15 30          ; '0'
+           LDBI R14 2D          ; '-'
+           LDWI R0 0
+L_ATOI:    LDBR R2 R1
+           SUB R2 R14           ; negative?
+           JMPNZ LABS_ATOI
+           INC R1
+LABS_ATOI: LDBR R2 R1
+           JMPZ SIGN_ATOI
+           SUB R15 R2
+           MV R0 R4
+           LSH R0               ; R0 * 10 = R0 + R0 + R0 << 3
+           JMPC ATOI_OVFL
+           LSH R0
+           JMPC ATOI_OVFL
+           LSH R0
+           JMPC ATOI_OVFL
+           ADD R4 R0
+           JMPC ATOI_OVFL
+           ADD R4 R0
+           JMPC ATOI_OVFL
+           ADD R2 R0
+           JMPC ATOI_OVFL
+           INC R1
+           JMP LABS_ATOI
+SIGN_ATOI: MV R14 R13
+           JMPNZ END_ATOI
+           SUB R0 R14           ; R14 here contains zero
+           MV R14 R0 
+END_ATOI:  RET
+ATOI_OVFL: CALL OVERFLOW
+           HLT
+
+INBUFADDR: word 0E000           ; beginning of input buffer area
+
+; READNUM function: reads an integer from the input device
+;                   and returns its value in R0
+
+READNUM:   LDWA R1 INBUFADDR    ; int readnum (void)
+           PUSH R1              
+           CALL GETS            
+           POP R1
+           CALL ATOI
+           RET
+
+; DIV function: R0 <- R1 / R2 and  R15 <- R1 % R2 
+; NOTE: only non-negative numbers are supported
+
+DIV:       LDWI R0 0            ; int div (int a, int b)
+           MV R1 R15
+L_DIV:     MV R15 R3
+           SUB R2 R3
+           JMPN END_DIV
+           SUB R2 R15
+           INC R0
+           JMP L_DIV
+END_DIV:   RET
+
+; WRITENUM function: writes on the output device the number 
+;                    whose value is passed in R1
+; NOTE: only non-negative numbers are supported
+
+WRITENUM:  LDWI R10 1           ; void writenum (int n)
+L1_WRNUM:  LDWI R11 09
+           SUB R1 R11
+           JMPNN L2_WRNUM
+           LDWI R2 0A
+           PUSH R10
+           CALL DIV
+           POP R10
+           MV R0 R1
+           PUSH R15
+           INC R10
+           JMP L1_WRNUM
+L2_WRNUM:  LDWI R11 30
+           ADD R1 R11
+L3_WRNUM:  OUTB R11 0000
+           TSTO 0000
+           DEC R10
+           JMPZ E_WRNUM
+           POP R1               ; was R15, stored in the stack
+           JMP L2_WRNUM
+E_WRNUM:   RET
+
+; multiple include of file overflow.ixx suppressed
+
+; MUL function: R0 <- R1 * R2
+; NOTE: only non-negative numbers are supportd
+
+MUL:       LDWI R0 0            ; int mul (int a, int b)
+           MV R1 R15
+L_MUL:     JMPZ END_MUL
+           ADD R2 R0
+           JMPC MUL_OVFL
+           DEC R1
+           JMP L_MUL
+END_MUL:   RET
+MUL_OVFL:  CALL OVERFLOW
+           HLT
+
+;****************************************************************************
+
+; MAIN PROGRAM
+
+START:     LDWA R15 STACKADDR   ; stack initialization
+           SPWR R15             ; NOTE: every function receives input
+                                ;       values/addresses in R1, R2, ...
+                                ;       and provides output in R0
+
+           ; read the number
+           CALL READNUM
+
+           MV R0 R1
+           CALL FACTORIAL
+
+           ; write the factorial
+           MV R0 R1
+           CALL WRITENUM
+
+           ; the end
+           HLT
+
+;****************************************************************************
+
+FACTORIAL: MV R1 R2             ; int factorial (int n)
+           JMPZ E_FACT
+           PUSH R1
+           DEC R1
+           CALL FACTORIAL
+           POP R1
+           MV R0 R2
+           CALL MUL
+           RET
+E_FACT:    LDWI R0 1
+           RET

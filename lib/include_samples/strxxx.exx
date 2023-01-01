@@ -1,0 +1,348 @@
+00F9
+00 | STACKADDR: word 0F000           ; beginning of stack area
+F0 | 
+00 | STR1:      word 0E000
+E0 | 
+00 | STR2:      word 0E100
+E1 | 
+00 | GETS:      LDBI R0 0A           ; void gets (char *str)
+11 | 
+0A | 
+20 | L_GETS:    INB R2 0001
+81 | 
+01 | 
+00 | 
+00 |            TSTI 0001     
+84 | 
+01 | 
+00 | 
+F6 |            JMPNZ L_GETS
+C3 | 
+21 |            STBR R2 R1    
+33 | 
+02 |            SUB R0 R2
+41 | 
+04 |            JMPZ END_GETS   
+C2 | 
+10 |            INC R1
+48 | 
+EC |            JMP L_GETS
+C1 | 
+20 | END_GETS:  LDBI R2 0
+11 | 
+00 | 
+21 |            STBR R2 R1    
+33 | 
+00 |            RET
+C9 | 
+21 | PUTS:      LDBR R2 R1           ; void puts (char *str)
+31 | 
+0E |            JMPZ END_PUTS
+C2 | 
+20 | L_PUTS:    OUTB R2 0000
+83 | 
+00 | 
+00 | 
+00 |            TSTO 0000     
+85 | 
+00 | 
+00 | 
+F6 |            JMPNZ L_PUTS
+C3 | 
+10 |            INC R1
+48 | 
+EE |            JMP PUTS
+C1 | 
+20 | END_PUTS:  LDBI R2 0A
+11 | 
+0A | 
+20 | LEND_PUTS: OUTB R2 0000
+83 | 
+00 | 
+00 | 
+00 |            TSTO 0000     
+85 | 
+00 | 
+00 | 
+F6 |            JMPNZ LEND_PUTS
+C3 | 
+00 |            RET
+C9 | 
+A1 | STRCAT:    LDBR R10 R1
+31 | 
+04 |            JMPZ SCAT_L1
+C2 | 
+10 |            INC R1
+48 | 
+F8 |            JMP STRCAT
+C1 | 
+A2 | SCAT_L1:   LDBR R10 R2
+31 | 
+08 |            JMPZ SCAT_L2
+C2 | 
+A1 |            STBR R10 R1
+33 | 
+10 |            INC R1
+48 | 
+20 |            INC R2
+48 | 
+F4 |            JMP SCAT_L1
+C1 | 
+A1 | SCAT_L2:   STBR R10 R1           ; copy the '\0'
+33 | 
+00 |            RET
+C9 | 
+00 | TEMPSTRADDR:  word 0F800    
+F8 | 
+10 | STREXCH:   PUSH R1               ; save address of string 1
+08 | 
+20 |            PUSH R2               ; save address of string 2
+08 | 
+20 |            LDWA R2 TEMPSTRADDR
+20 | 
+5D | 
+00 | 
+00 |            CALL STRCPY           ; copy string 1 into temp
+C8 | 
+81 | 
+00 | 
+10 |            POP R1                ; exchange the addresses
+09 | 
+20 |            POP R2
+09 | 
+10 |            PUSH R1               ; save address of string 2 (now in R1)
+08 | 
+00 |            CALL STRCPY           ; copy string 2 into string 1
+C8 | 
+81 | 
+00 | 
+20 |            POP R2
+09 | 
+10 |            LDWA R1 TEMPSTRADDR
+20 | 
+5D | 
+00 | 
+00 |            CALL STRCPY           ; copy temp into string 2
+C8 | 
+81 | 
+00 | 
+00 |            RET
+C9 | 
+A1 | STRCPY:    LDBR R10 R1
+31 | 
+A2 |            STBR R10 R2
+33 | 
+06 |            JMPZ END_SCPY
+C2 | 
+10 |            INC R1
+48 | 
+20 |            INC R2
+48 | 
+F4 |            JMP STRCPY
+C1 | 
+00 | END_SCPY:  RET
+C9 | 
+1B | STRCMP:    MV R1 R11   ; save R1 in R11
+04 | 
+2C |            MV R2 R12   ; save R2 in R12
+04 | 
+3B | L_STRCMP:  LDBR R3 R11
+31 | 
+4C |            LDBR R4 R12
+31 | 
+30 |            MV R3 R0
+04 | 
+40 |            SUB R4 R0
+41 | 
+0E |            JMPNZ E_STRCMP
+C3 | 
+35 |            MV R3 R5    ; end of string?
+04 | 
+0A |            JMPZ E_STRCMP
+C2 | 
+45 |            MV R4 R5
+04 | 
+06 |            JMPZ E_STRCMP
+C2 | 
+B0 |            INC R11
+48 | 
+C0 |            INC R12
+48 | 
+E8 |            JMP L_STRCMP
+C1 | 
+00 | E_STRCMP:  RET
+C9 | 
+00 | DIV:       LDWI R0 0            ; int div (int a, int b)
+10 | 
+00 | 
+00 | 
+1F |            MV R1 R15
+04 | 
+F3 | L_DIV:     MV R15 R3
+04 | 
+23 |            SUB R2 R3
+41 | 
+06 |            JMPN END_DIV
+C4 | 
+2F |            SUB R2 R15
+41 | 
+00 |            INC R0
+48 | 
+F4 |            JMP L_DIV
+C1 | 
+00 | END_DIV:   RET
+C9 | 
+A0 | WRITENUM:  LDWI R10 1           ; void writenum (int n)
+10 | 
+01 | 
+00 | 
+B0 | L1_WRNUM:  LDWI R11 09
+10 | 
+09 | 
+00 | 
+1B |            SUB R1 R11
+41 | 
+14 |            JMPNN L2_WRNUM
+C5 | 
+20 |            LDWI R2 0A
+10 | 
+0A | 
+00 | 
+A0 |            PUSH R10
+08 | 
+00 |            CALL DIV
+C8 | 
+AD | 
+00 | 
+A0 |            POP R10
+09 | 
+01 |            MV R0 R1
+04 | 
+F0 |            PUSH R15
+08 | 
+A0 |            INC R10
+48 | 
+E4 |            JMP L1_WRNUM
+C1 | 
+B0 | L2_WRNUM:  LDWI R11 30
+10 | 
+30 | 
+00 | 
+1B |            ADD R1 R11
+40 | 
+B0 | L3_WRNUM:  OUTB R11 0000
+83 | 
+00 | 
+00 | 
+00 |            TSTO 0000
+85 | 
+00 | 
+00 | 
+A0 |            DEC R10
+49 | 
+04 |            JMPZ E_WRNUM
+C2 | 
+10 |            POP R1               ; was R15, stored in the stack
+09 | 
+EA |            JMP L2_WRNUM
+C1 | 
+00 | E_WRNUM:   RET
+C9 | 
+F0 | START:     LDWA R15 STACKADDR   ; stack initialization
+20 | 
+00 | 
+00 | 
+F0 |            SPWR R15             ; NOTE: every function receives input
+0E | 
+10 |            LDWA R1 STR1
+20 | 
+02 | 
+00 | 
+00 |            CALL GETS
+C8 | 
+06 | 
+00 | 
+10 |            LDWA R1 STR2
+20 | 
+04 | 
+00 | 
+00 |            CALL GETS
+C8 | 
+06 | 
+00 | 
+10 |            LDWA R1 STR1
+20 | 
+02 | 
+00 | 
+20 |            LDWA R2 STR2
+20 | 
+04 | 
+00 | 
+00 |            CALL STRCMP
+C8 | 
+8F | 
+00 | 
+01 |            MV R0 R1
+04 | 
+00 |            CALL WRITENUM
+C8 | 
+C1 | 
+00 | 
+10 |            LDWA R1 STR1
+20 | 
+02 | 
+00 | 
+20 |            LDWA R2 STR2
+20 | 
+04 | 
+00 | 
+00 |            CALL STREXCH
+C8 | 
+5F | 
+00 | 
+10 |            LDWA R1 STR1
+20 | 
+02 | 
+00 | 
+00 |            CALL PUTS
+C8 | 
+24 | 
+00 | 
+10 |            LDWA R1 STR2
+20 | 
+04 | 
+00 | 
+00 |            CALL PUTS
+C8 | 
+24 | 
+00 | 
+10 |            LDWA R1 STR1
+20 | 
+02 | 
+00 | 
+20 |            LDWA R2 STR2
+20 | 
+04 | 
+00 | 
+00 |            CALL STRCAT
+C8 | 
+45 | 
+00 | 
+10 |            LDWA R1 STR1
+20 | 
+02 | 
+00 | 
+00 |            CALL PUTS
+C8 | 
+24 | 
+00 | 
+10 |            LDWA R1 STR2
+20 | 
+04 | 
+00 | 
+00 |            CALL PUTS
+C8 | 
+24 | 
+00 | 
+00 |            HLT
+CF | 
