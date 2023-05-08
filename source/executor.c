@@ -1193,7 +1193,7 @@ void show_memory (word starting_address, int size)
    for (i = starting_address;
         (i < starting_address + size) && (i < (int) MEMSIZE); i++)
    {
-      sprintf (s, "MEM[%04X]: %02X | %s",
+      sprintf (s, "MEM[%04X]: %02X | %.224s",
                i, (unsigned int) memory[i], comments[i]);
       message (s);
    }
