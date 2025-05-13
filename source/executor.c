@@ -1252,7 +1252,7 @@ void show_input_buffer (void)
 
    for (i = input_index; input_buffer[i] != '\0'; i++)
    {
-      if (input_buffer[i] > 32 && input_buffer[i] < 127)
+      if (input_buffer[i] >= 32 && input_buffer[i] < 127)
       {
          sprintf (s, "%02X (ASCII '%c')", input_buffer[i], input_buffer[i]);
          message (s);
@@ -1262,7 +1262,13 @@ void show_input_buffer (void)
          sprintf (s, "%02X (ASCII '\\n')", input_buffer[i]);
          message (s);
       }
+      else
+      {
+         sprintf (s, "%02X", input_buffer[i]);
+         message (s);
+      }
    }
+
    return;
 }
 
