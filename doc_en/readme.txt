@@ -66,10 +66,10 @@
  1) To compile (see make_simcpu.bat):
     gcc -g -osimcpu.exe executor.c user_interface.c
 
- 2) To run in interactive mode (simcpu executable file format is 
-    documented in file_formats.txt):
+ 2) To simulate in interactive mode the SimCPU executable file foo.exx
+    (simcpu executable file format is documented in file_formats.txt):
 
-    C:\>simcpu foo.exx
+    C:\>simcpu foo
 
     (if no file name is given on the command line, the program asks for one)
 
@@ -83,8 +83,10 @@
 
  3) To run in batch mode put the simulation commands in a text file (see 
     an example in run/batch_input_commands.txt)
+    To start the simulation in batch mode:
+    C:\>simcpu foo batch_input_commands.txt
     To start the simulation and log the trace in a text file:
-    C:\>simcpu foo.exx < batch_input_commands.txt > simulation_trace.txt
+    C:\>simcpu foo batch_input_commands.txt > simulation_trace.txt
 
 
 

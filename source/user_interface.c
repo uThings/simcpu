@@ -124,7 +124,7 @@ extern unsigned char breakpoints[MEMSIZE];
 extern unsigned char single_step;
 extern unsigned char trace_mode;
 
-void user_control (word current_program_counter);
+void user_control (word current_program_counter, FILE *input_stream);
 void prompt (char *command, char *options);
 int get_command (FILE *input_stream, char *prompt, char *options,
                  int interactive_mode);
@@ -159,27 +159,50 @@ void show_input_buffer (void);
 
 int main (int argc, char *argv[])
 {
-   FILE *fp;
+   FILE *fp, *fp_commands;
    word starting_address;
-   char filename[MAX_FNAME_LEN];
+   char filename[MAX_FNAME_LEN], fname_commands[MAX_FNAME_LEN];
 
-   if (argc != 2)
+   if (argc == 1)
    {
       printf ("SimCPU executable file (without .exx extension): ");
       scanf ("%s", filename);
       while (getchar() != '\n');
    }
-   else
+   else if (argc == 2)
    {
       strcpy (filename, argv[1]);
+   }
+   else if (argc == 3)
+   {
+      strcpy (filename, argv[1]);
+      strcpy (fname_commands, argv[2]);
+   }
+   else
+   {
+      printf ("usage: SimCPU [executable filename] [commands filename]\n");
+      exit (EXIT_FAILURE);
    }
 
    strcat (filename, EXECUTABLE_EXT);
 
    if ((fp = fopen (filename, "r")) == NULL)
    {
-      printf ("Cannot open input file %s\n", filename);
+      printf ("Cannot open executable file %s\n", filename);
       exit (EXIT_FAILURE);
+   }
+   
+   if (argc == 3)
+   {
+      if ((fp_commands = fopen (fname_commands, "r")) == NULL)
+      {
+         printf ("Cannot open commands file %s\n", fname_commands);
+         exit (EXIT_FAILURE);
+      }
+   }
+   else
+   {
+      fp_commands = stdin;
    }
 
    printf ("SIMCPU %s starting...\n", sim_version());
@@ -188,18 +211,22 @@ int main (int argc, char *argv[])
    int_setup ();
 
    starting_address = initialize_executor (fp);
-   user_control (starting_address);
+   user_control (starting_address, fp_commands);
 
    return EXIT_SUCCESS;
 }
 
 /*****************************************************************/
 
-void user_control (word current_program_counter)
+void user_control (word current_program_counter, FILE *input_stream)
 {
    int addr, len;
-   int interactive_mode = 1; /* non-interactive mode not yet implemented */
-   FILE *input_stream = stdin; /* default */
+   int interactive_mode = 1;
+   
+   if (input_stream == stdin)
+     interactive_mode = 1;
+   else
+     interactive_mode = 0;
 
    while (1)
    {
@@ -438,6 +465,10 @@ int get_command (FILE *input_stream, char *prompt, char *options,
 
    while (status != 2 && (ch = fgetc (input_stream)) != EOF)
    {
+      /* for compatibility with Windows EOL format, skip CR characters */
+      if (ch == 13)
+         continue;
+
       cr_flag = 0;
       if (status == 0)
       {

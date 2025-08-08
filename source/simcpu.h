@@ -21,7 +21,7 @@
 /* VERSION */
 /***********/
 
-#define SIM_VERSION "3.5"
+#define SIM_VERSION "3.6"
 #define ASM_VERSION "2.0"
 
 

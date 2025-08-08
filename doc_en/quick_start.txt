@@ -234,3 +234,17 @@ ENTERING COMMAND MODE: current program counter = 0002
 > q
 
 (Control is returned to MS-DOS)
+
+
+
+-------------------------------------------------------------------
+-------------------------------------------------------------------
+Batch mode
+
+C:\simcpu>simcpu sum3 commands.txt
+
+The file commands.txt shall contain the commands to setup (e.g., load input buffer, set trace mode) and execute (e.g. run forever) the simulation.
+Abbreviations can be used, just link in interactive mode.
+The file shall end with a single blank line.
+No other blank lines are allowed.
+
