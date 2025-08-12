@@ -530,6 +530,10 @@ int get_ascii_data (FILE *input_stream, char *prompt,
    while (i < INPUTBUFFERSIZE-1 && status != 2
           && (ch = fgetc (input_stream)) != EOF)
    {
+      /* for compatibility with Windows EOL format, skip CR characters */
+      if (ch == 13)
+         continue;
+
       cr_flag = 0;
       if (status == 0)
       {
@@ -587,6 +591,10 @@ int get_hex_data (FILE *input_stream, char *prompt,
 
    while (status != 2 && (ch = fgetc (input_stream)) != EOF)
    {   
+      /* for compatibility with Windows EOL format, skip CR characters */
+      if (ch == 13)
+         continue;
+
       cr_flag = 0;
       if (status == 0)
       {
@@ -653,7 +661,11 @@ int get_dec_data (FILE *input_stream, char *prompt,
    }
 
    while (status != 2 && (ch = fgetc (input_stream)) != EOF)
-   {   
+   {
+      /* for compatibility with Windows EOL format, skip CR characters */
+      if (ch == 13)
+         continue;
+
       cr_flag = 0;
       if (status == 0)
       {
